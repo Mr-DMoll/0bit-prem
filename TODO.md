@@ -17,6 +17,7 @@ Legend: `[x]` done & verified live · `[~]` partial / in progress · `[ ]` not s
 - [x] Admin: album CRUD, track CRUD, reorder
 - [x] Public: browse albums, album detail, free/locked gating, real audio streaming via mini-player
 - [x] Buy-album flow (records purchase directly — no real payment processor yet, by design for now)
+- [x] Admin album-creation wizard (Metadata → Cover → Tracks, modeled on audiobookmasters' Studio pattern): multi-file bulk track upload with real XHR progress bars, filename-derived titles, real client-side duration detection (`Audio` + `loadedmetadata` — unlike audiobookmasters, which hardcodes duration to 0), native drag-reorder, staged-then-commit editing (rename/Free-toggle/soft-delete batched into one `PATCH .../tracks/bulk` on Commit). Shared `TrackStudio` component also used standalone on the existing-album Tracks page. Verified end-to-end live: created an album through all 3 steps with 2 real staged audio files (durations correctly detected), finalized to LIVE, then on an existing album exercised rename + Free toggle + reorder + delete all committed together in one batch call.
 
 ## Events / Gallery / Bookings — done
 

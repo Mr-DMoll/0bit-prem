@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Plus, ListMusic } from "lucide-react";
 import { musicService, type Album, type AlbumInput } from "../services/music.service";
 import { FileUploadField } from "../components/FileUploadField";
+import { AlbumWizard } from "../components/AlbumWizard";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
@@ -153,10 +156,13 @@ function AlbumModal({ album, onClose, onSubmit }: {
 }
 
 export function MusicPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [albums, setAlbums]       = useState<Album[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
-  const [modalAlbum, setModalAlbum] = useState<Album | null | "new">(null);
+  const [modalAlbum, setModalAlbum] = useState<Album | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   const fetchAlbums = useCallback(async () => {
     try {
@@ -172,12 +178,15 @@ export function MusicPage() {
 
   useEffect(() => { fetchAlbums(); }, [fetchAlbums]);
 
-  const handleCreate = async (input: AlbumInput) => { await musicService.createAlbum(input); await fetchAlbums(); };
   const handleUpdate = async (id: string, input: AlbumInput) => { await musicService.updateAlbum(id, input); await fetchAlbums(); };
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this album and all its tracks?")) return;
-    await musicService.deleteAlbum(id);
-    await fetchAlbums();
+    if (!(await confirm({ message: "Delete this album and all its tracks? This cannot be undone.", danger: true }))) return;
+    try {
+      await musicService.deleteAlbum(id);
+      await fetchAlbums();
+    } catch (err: any) {
+      toast(err?.response?.data?.message ?? "Failed to delete album.");
+    }
   };
 
   const live = albums.filter((a) => a.status === "LIVE").length;
@@ -190,7 +199,7 @@ export function MusicPage() {
           <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--color-text-primary)", letterSpacing: "-0.02em" }}>Music</h1>
           <p style={{ fontSize: "14px", color: "var(--color-text-muted)", marginTop: "4px" }}>Albums and tracks</p>
         </div>
-        <button onClick={() => setModalAlbum("new")} style={{
+        <button onClick={() => setShowWizard(true)} style={{
           display: "flex", alignItems: "center", gap: "8px", padding: "10px 18px",
           background: "var(--color-accent)", border: "none", borderRadius: "var(--radius-md)",
           fontSize: "13.5px", fontWeight: 600, color: "var(--color-accent-text)", cursor: "pointer",
@@ -216,7 +225,7 @@ export function MusicPage() {
         ) : albums.length === 0 ? (
           <div style={{ padding: "60px", textAlign: "center" }}>
             <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-text-primary)", marginBottom: "8px" }}>No albums yet</p>
-            <button onClick={() => setModalAlbum("new")} style={{
+            <button onClick={() => setShowWizard(true)} style={{
               padding: "10px 20px", background: "var(--color-accent)", border: "none",
               borderRadius: "var(--radius-md)", fontSize: "13.5px", fontWeight: 600, color: "var(--color-accent-text)", cursor: "pointer",
             }}>
@@ -287,9 +296,16 @@ export function MusicPage() {
 
       {modalAlbum && (
         <AlbumModal
-          album={modalAlbum === "new" ? null : modalAlbum}
+          album={modalAlbum}
           onClose={() => setModalAlbum(null)}
-          onSubmit={(input) => modalAlbum === "new" ? handleCreate(input) : handleUpdate((modalAlbum as Album).id, input)}
+          onSubmit={(input) => handleUpdate(modalAlbum.id, input)}
+        />
+      )}
+
+      {showWizard && (
+        <AlbumWizard
+          onClose={() => { setShowWizard(false); fetchAlbums(); }}
+          onComplete={() => { setShowWizard(false); fetchAlbums(); }}
         />
       )}
     </div>

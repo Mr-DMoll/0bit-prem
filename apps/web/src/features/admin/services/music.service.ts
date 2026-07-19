@@ -73,6 +73,20 @@ export const musicService = {
     return data;
   },
 
+  async createTracksBatch(albumId: string, tracks: TrackInput[]): Promise<{ data: { tracks: Track[] } }> {
+    const { data } = await apiClient.post(endpoints.adminMusic.tracksBatch(albumId), { tracks });
+    return data;
+  },
+
+  async bulkUpdateTracks(
+    albumId: string,
+    updates: { id: string; title?: string; isFree?: boolean; order?: number }[],
+    deletes: string[]
+  ): Promise<{ data: { tracks: Track[] } }> {
+    const { data } = await apiClient.patch(endpoints.adminMusic.tracksBulk(albumId), { updates, deletes });
+    return data;
+  },
+
   async updateTrack(id: string, input: Partial<TrackInput> & { swapWithOrder?: number }) {
     const { data } = await apiClient.patch(endpoints.adminMusic.trackById(id), input);
     return data;

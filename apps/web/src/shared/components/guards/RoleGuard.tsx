@@ -18,7 +18,7 @@ export function RoleGuard({ children, allowedRoles, redirectTo }: RoleGuardProps
 
   useEffect(() => {
     if (isLoading) return;
-    if (!user) { router.push("/login"); return; }
+    if (!user) { router.push("/staff-login"); return; }
     // Wrong role: send them to their own dashboard, not a static fallback.
     if (!allowedRoles.includes(user.role)) { router.push(redirectTo ?? ROLE_ROUTES[user.role] ?? "/"); }
   }, [user, isLoading, router, redirectTo, allowedRoles]);

@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
   const [error,           setError]           = useState<string | null>(null);
   const [isDone,          setIsDone]          = useState(false);
 
-  useEffect(() => { if (!token) router.replace("/login"); }, [token, router]);
+  useEffect(() => { if (!token) router.replace("/staff-login"); }, [token, router]);
   if (!token) return null;
 
   const isValid =
@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
     try {
       await apiClient.post(endpoints.auth.resetPassword, { token, email, password });
       setIsDone(true);
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/staff-login"), 2000);
     } catch (err: any) {
       const msg = err?.response?.data?.message;
       setError(
@@ -220,7 +220,7 @@ export default function ResetPasswordPage() {
                 {isSubmitting ? "Resetting..." : "Reset password"}
               </button>
 
-              <Link href="/login" style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>
+              <Link href="/staff-login" style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>
                 ← Back to sign in
               </Link>
             </form>

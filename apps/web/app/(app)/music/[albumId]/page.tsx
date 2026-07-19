@@ -5,6 +5,7 @@ import { Play, Pause, Lock } from "lucide-react";
 import PageHeader from "@/features/public/PageHeader";
 import { useMusicPlayer } from "@/features/public/MusicPlayerContext";
 import { useAuth } from "@/shared/context/AuthContext";
+import LockedTrackPrompt from "@/features/public/LockedTrackPrompt";
 import { publicMusicService, type PublicAlbum, type PublicTrack } from "@/features/public/services/music.service";
 
 function formatDuration(seconds: number) {
@@ -23,6 +24,7 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
   const [isLoading, setIsLoading] = useState(true);
   const [isBuying, setIsBuying]   = useState(false);
   const [error, setError]         = useState<string | null>(null);
+  const [lockedTrack, setLockedTrack] = useState<PublicTrack | null>(null);
 
   const fetchAlbum = useCallback(async () => {
     try {
@@ -39,7 +41,10 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
   useEffect(() => { fetchAlbum(); }, [fetchAlbum]);
 
   const handlePlay = (track: PublicTrack) => {
-    if (track.isLocked || !track.audioUrl) return;
+    if (track.isLocked || !track.audioUrl) {
+      setLockedTrack({ ...track, albumId, albumTitle: album?.title });
+      return;
+    }
     if (nowPlaying?.track.id === track.id) {
       toggle();
     } else {
@@ -107,13 +112,12 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
             }}>
               <button
                 onClick={() => handlePlay(track)}
-                disabled={track.isLocked}
                 style={{
                   width: "30px", height: "30px", borderRadius: "50%", flexShrink: 0, border: "none",
                   background: track.isLocked ? "var(--color-bg-subtle)" : "var(--color-accent)",
                   color: track.isLocked ? "var(--color-text-muted)" : "var(--color-accent-text)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: track.isLocked ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                 }}
               >
                 {track.isLocked ? <Lock size={12} /> : isCurrentlyPlaying ? <Pause size={12} /> : <Play size={12} style={{ marginLeft: "1px" }} />}
@@ -133,6 +137,8 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
           );
         })}
       </div>
+
+      {lockedTrack && <LockedTrackPrompt track={lockedTrack} onClose={() => setLockedTrack(null)} onBuy={handleBuy} />}
     </div>
   );
 }

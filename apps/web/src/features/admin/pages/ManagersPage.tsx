@@ -195,12 +195,13 @@ function ConfirmDialog({ title, message, confirmLabel, danger, onConfirm, onCanc
 }
 
 // ─── Manager row ───────────────────────────────────────────────────────────────
-function ManagerRow({ manager, onStatusChange, onRefetch }: {
+function ManagerRow({ manager, onStatusChange, onDemote, onRefetch }: {
   manager: TeamUser;
   onStatusChange: (id: string, status: string) => Promise<void>;
+  onDemote: (id: string) => Promise<void>;
   onRefetch: () => void;
 }) {
-  const [confirm, setConfirm] = useState<"suspend" | "activate" | null>(null);
+  const [confirm, setConfirm] = useState<"suspend" | "activate" | "demote" | null>(null);
 
   const name = manager.displayName ||
     [manager.firstName, manager.lastName].filter(Boolean).join(" ") ||
@@ -269,6 +270,15 @@ function ManagerRow({ manager, onStatusChange, onRefetch }: {
                 Invite pending
               </span>
             )}
+            {manager.accountStatus === "ACTIVE" && (
+              <button onClick={() => setConfirm("demote")} style={{
+                padding: "4px 12px", fontSize: "12px", fontWeight: 600,
+                color: "var(--color-text-secondary)", background: "var(--color-bg-subtle)",
+                border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", cursor: "pointer",
+              }}>
+                → Customer
+              </button>
+            )}
           </div>
         </td>
       </tr>
@@ -288,6 +298,15 @@ function ManagerRow({ manager, onStatusChange, onRefetch }: {
           message={`${name} will regain full access.`}
           confirmLabel="Activate"
           onConfirm={async () => { await onStatusChange(manager.id, "ACTIVE"); setConfirm(null); onRefetch(); }}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+      {confirm === "demote" && (
+        <ConfirmDialog
+          title="Change to customer?"
+          message={`${name} will lose manager permissions and move to the Customers list.`}
+          confirmLabel="Change"
+          onConfirm={async () => { await onDemote(manager.id); setConfirm(null); }}
           onCancel={() => setConfirm(null)}
         />
       )}
@@ -318,6 +337,11 @@ export function ManagersPage() {
 
   const handleInvite        = async (email: string) => { await adminService.inviteManager(email); await fetchManagers(); };
   const handleStatusChange  = async (id: string, status: string) => { await adminService.updateUserStatus(id, status); };
+  const handleDemote        = async (id: string) => {
+    await adminService.updateUserRole(id, "USER");
+    // Demoted accounts belong on the Customers page now, not here.
+    setManagers((prev) => prev.filter((m) => m.id !== id));
+  };
 
   const active    = managers.filter((m) => m.accountStatus === "ACTIVE").length;
   const pending   = managers.filter((m) => m.accountStatus === "PENDING").length;
@@ -413,7 +437,7 @@ export function ManagersPage() {
             </thead>
             <tbody>
               {managers.map((m) => (
-                <ManagerRow key={m.id} manager={m} onStatusChange={handleStatusChange} onRefetch={fetchManagers} />
+                <ManagerRow key={m.id} manager={m} onStatusChange={handleStatusChange} onDemote={handleDemote} onRefetch={fetchManagers} />
               ))}
             </tbody>
           </table>

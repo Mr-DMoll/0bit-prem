@@ -61,7 +61,7 @@ export default function HarinamPage() {
         <p style={{ fontSize: "13px", color: "var(--color-text-muted)" }}>Loading…</p>
       ) : tab === "Teachings" ? (
         intro ? (
-          <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", width: "100%" }}>
+          <div className="pk-toc-layout">
             <TableOfContents headings={headings} />
             <MarkdownContent markdown={intro} maxWidth="1000px" />
           </div>

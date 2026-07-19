@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { merchService, type Product, type Variant, type VariantInput } from "../services/merch.service";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 const inputStyle: React.CSSProperties = {
   padding: "9px 12px", background: "var(--color-bg-subtle)", border: "1px solid var(--color-border)",
@@ -46,6 +48,8 @@ function AddVariantRow({ onSubmit }: { onSubmit: (input: VariantInput) => Promis
 }
 
 export function VariantsPage({ productId }: { productId: string }) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [product, setProduct]     = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -69,9 +73,13 @@ export function VariantsPage({ productId }: { productId: string }) {
   const handleAdd = async (input: VariantInput) => { await merchService.createVariant(productId, input); await fetchProduct(); };
   const handleUpdateField = async (id: string, input: Partial<VariantInput>) => { await merchService.updateVariant(id, input); await fetchProduct(); };
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this variant?")) return;
-    await merchService.deleteVariant(id);
-    await fetchProduct();
+    if (!(await confirm({ message: "Delete this variant?", danger: true }))) return;
+    try {
+      await merchService.deleteVariant(id);
+      await fetchProduct();
+    } catch (err: any) {
+      toast(err?.response?.data?.message ?? "Failed to delete variant.");
+    }
   };
 
   if (isLoading) return <div style={{ padding: "60px", textAlign: "center", color: "var(--color-text-muted)" }}>Loading…</div>;

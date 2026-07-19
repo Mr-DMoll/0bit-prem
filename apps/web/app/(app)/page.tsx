@@ -2,12 +2,14 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Repeat, Repeat1, SkipBack, SkipForward, ListMusic, X } from "lucide-react";
+import { Repeat, Repeat1, SkipBack, SkipForward, ListMusic, Loader2 } from "lucide-react";
 import { useMusicPlayer } from "@/features/public/MusicPlayerContext";
 import { publicMusicService, type PublicTrack } from "@/features/public/services/music.service";
 import { YantraRing, EqBars } from "@/features/public/SanctumRing";
 import { SanctumBackdrop } from "@/features/public/SanctumBackdrop";
 import VolumeControl from "@/features/public/VolumeControl";
+import TrackListPanel from "@/features/public/TrackListPanel";
+import LockedTrackPrompt from "@/features/public/LockedTrackPrompt";
 
 function shuffle<T>(items: T[]): T[] {
   const result = [...items];
@@ -16,13 +18,6 @@ function shuffle<T>(items: T[]): T[] {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
-}
-
-function formatTime(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function controlBtnStyle(enabled: boolean, active = false): React.CSSProperties {
@@ -38,33 +33,48 @@ function controlBtnStyle(enabled: boolean, active = false): React.CSSProperties 
 
 export default function SanctumPage() {
   const {
-    nowPlaying, isPlaying, play, toggle, setRepeatMode,
+    nowPlaying, isPlaying, isBuffering, play, toggle, setRepeatMode,
     hasNext, hasPrevious, playNext, playPrevious, repeatMode, cycleRepeat, queue,
   } = useMusicPlayer();
   const [mix, setMix] = useState<{ mode: "owned" | "sampler"; queue: PublicTrack[] } | null>(null);
   const [showQueue, setShowQueue] = useState(false);
+  const [lockedTrack, setLockedTrack] = useState<PublicTrack | null>(null);
 
   useEffect(() => {
     publicMusicService.getSanctumMix()
-      .then((res) => setMix({ mode: res.data.mode, queue: shuffle(res.data.tracks) }))
+      .then((res) => {
+        // Pick one random album to arrive on, rather than shuffling every
+        // track from every album into one mixed queue — the album itself is
+        // the random part; once you land on it, the track list and skip
+        // next/prev stay scoped to that album's own, real track order.
+        const byAlbum = new Map<string, PublicTrack[]>();
+        for (const t of res.data.tracks) {
+          const key = t.albumId ?? "";
+          (byAlbum.get(key) ?? byAlbum.set(key, []).get(key)!).push(t);
+        }
+        const [chosenAlbumId] = shuffle([...byAlbum.keys()]);
+        const albumQueue = (byAlbum.get(chosenAlbumId) ?? []).sort((a, b) => a.order - b.order);
+        setMix({ mode: res.data.mode, queue: albumQueue });
+      })
       .catch(() => setMix({ mode: "sampler", queue: [] }));
   }, []);
+
+  const firstPlayable = mix?.queue.find((t) => !t.isLocked && t.audioUrl);
 
   const handleToggle = useCallback(() => {
     if (nowPlaying) {
       toggle();
       return;
     }
-    if (!mix || mix.queue.length === 0) return;
-    const [first] = mix.queue;
+    if (!firstPlayable) return;
     setRepeatMode("all");
-    play(first, first.albumTitle ?? "", first.albumCoverUrl ?? null, mix.queue);
-  }, [mix, nowPlaying, toggle, play, setRepeatMode]);
+    play(firstPlayable, firstPlayable.albumTitle ?? "", firstPlayable.albumCoverUrl ?? null, mix!.queue);
+  }, [firstPlayable, mix, nowPlaying, toggle, play, setRepeatMode]);
 
-  const hasQueue = !!mix && mix.queue.length > 0;
+  const hasQueue = !!firstPlayable;
   const playing = !!nowPlaying && isPlaying;
-  const track = nowPlaying?.track ?? mix?.queue[0];
-  const albumTitle = nowPlaying?.albumTitle ?? mix?.queue[0]?.albumTitle;
+  const track = nowPlaying?.track ?? firstPlayable;
+  const albumTitle = nowPlaying?.albumTitle ?? firstPlayable?.albumTitle;
   const RING = 360;
 
   // Sanctum is a single screen, not a scrolling page — its height is pinned to
@@ -124,7 +134,9 @@ export default function SanctumPage() {
                   transition: "background 0.9s ease, border-color 0.9s ease",
                 }}
               >
-                {playing
+                {isBuffering && nowPlaying
+                  ? <Loader2 size={22} color="var(--color-accent)" style={{ animation: "spin 0.9s linear infinite" }} />
+                  : playing
                   ? <EqBars />
                   : <span style={{ fontSize: "1.8rem", color: "var(--color-accent)", opacity: 0.9, userSelect: "none", marginTop: "2px" }}>ॐ</span>}
               </button>
@@ -163,7 +175,7 @@ export default function SanctumPage() {
           )}
 
           {nowPlaying && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "10px", marginBottom: "var(--pk-sanctum-gap-sm)" }}>
+            <div className="pk-sanctum-controls" style={{ alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "10px", marginBottom: "var(--pk-sanctum-gap-sm)" }}>
               <VolumeControl size={15} />
               <button onClick={cycleRepeat} aria-label={`Repeat: ${repeatMode}`} style={controlBtnStyle(true, repeatMode !== "off")}>
                 {repeatMode === "one" ? <Repeat1 size={15} /> : <Repeat size={15} />}
@@ -186,47 +198,18 @@ export default function SanctumPage() {
           )}
 
           {showQueue && nowPlaying && (
-            <div style={{
-              width: "min(90vw, 360px)", maxHeight: "40vh", margin: "0 auto 24px", textAlign: "left",
-              borderRadius: "16px", background: "var(--color-sidebar-bg)", border: "1px solid var(--color-sidebar-border)",
-              boxShadow: "var(--color-card-shadow)", display: "flex", flexDirection: "column", overflow: "hidden",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 8px" }}>
-                <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  Track list
-                </h3>
-                <button onClick={() => setShowQueue(false)} aria-label="Close track list" style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "4px" }}>
-                  <X size={16} />
-                </button>
-              </div>
-              <div style={{ flex: 1, overflowY: "auto", padding: "0 8px 12px" }}>
-                {queue.map((t, i) => {
-                  const isCurrent = t.id === nowPlaying.track.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => !t.isLocked && t.audioUrl && play(t, t.albumTitle ?? nowPlaying.albumTitle, t.albumCoverUrl ?? nowPlaying.albumCoverUrl, queue)}
-                      disabled={t.isLocked}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "10px", width: "100%", textAlign: "left",
-                        padding: "8px 10px", background: isCurrent ? "var(--color-accent-subtle)" : "none",
-                        border: "none", borderRadius: "var(--radius-md)",
-                        cursor: t.isLocked ? "not-allowed" : "pointer", opacity: t.isLocked ? 0.5 : 1,
-                      }}
-                    >
-                      <span style={{ width: "16px", fontSize: "11px", color: isCurrent ? "var(--color-accent)" : "var(--color-text-muted)", flexShrink: 0 }}>
-                        {isCurrent && isPlaying ? "♪" : i + 1}
-                      </span>
-                      <span style={{ flex: 1, fontSize: "12.5px", fontWeight: isCurrent ? 700 : 400, color: isCurrent ? "var(--color-accent)" : "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {t.title}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "var(--color-text-muted)", flexShrink: 0 }}>{formatTime(t.duration)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <TrackListPanel
+              queue={queue}
+              currentTrackId={nowPlaying.track.id}
+              isPlaying={isPlaying}
+              subtitle={nowPlaying.albumTitle}
+              onPlay={(t) => play(t, t.albumTitle ?? nowPlaying.albumTitle, t.albumCoverUrl ?? nowPlaying.albumCoverUrl, queue)}
+              onLockedClick={setLockedTrack}
+              onClose={() => setShowQueue(false)}
+            />
           )}
+
+          {lockedTrack && <LockedTrackPrompt track={lockedTrack} onClose={() => setLockedTrack(null)} />}
 
           <Link
             href="/music"

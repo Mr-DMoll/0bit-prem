@@ -76,7 +76,7 @@ export default function SetPasswordPage() {
   const [error,            setError]            = useState<string | null>(null);
   const [isDone,           setIsDone]           = useState(false);
 
-  useEffect(() => { if (!token) router.replace("/login"); }, [token, router]);
+  useEffect(() => { if (!token) router.replace("/staff-login"); }, [token, router]);
   if (!token) return null;
 
   const isValid =
@@ -93,7 +93,7 @@ export default function SetPasswordPage() {
     try {
       await authService.setPassword({ token, email, password });
       setIsDone(true);
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/staff-login"), 2000);
     } catch (err: any) {
       const msg = err?.response?.data?.message;
       setError(

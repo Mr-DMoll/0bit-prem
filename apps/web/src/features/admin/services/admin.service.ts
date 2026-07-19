@@ -14,8 +14,32 @@ export interface TeamUser {
   updatedAt: string;
 }
 
+export interface DashboardActivityUser {
+  email: string;
+  displayName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+export interface DashboardStats {
+  totalUsers: number;
+  totalManagers: number;
+  pendingUsers: number;
+  activeUsers: number;
+  newUsersThisWeek: number;
+  recentSignups: (TeamUser)[];
+  recentActivity: { id: string; action: string; createdAt: string; user: DashboardActivityUser | null }[];
+  revenue: { thisMonthCents: number; lastMonthCents: number; allTimeCents: number };
+  ordersAwaitingFulfillment: number;
+  newBookingInquiries: number;
+  needsAttention: {
+    type: "order" | "booking"; id: string; label: string; subLabel: string;
+    createdAt: string; href: string;
+  }[];
+}
+
 export const adminService = {
-  async getDashboard() {
+  async getDashboard(): Promise<{ data: DashboardStats }> {
     const { data } = await apiClient.get(endpoints.admin.dashboard);
     return data;
   },

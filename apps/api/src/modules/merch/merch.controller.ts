@@ -73,6 +73,14 @@ export const adminDeleteProduct = catchAsync(async (req: Request, res: Response)
   const existing = await prisma.product.findUnique({ where: { id } });
   if (!existing) throw new AppError("Product not found", HttpStatus.NOT_FOUND);
 
+  const orderItemCount = await prisma.orderItem.count({ where: { productVariant: { productId: id } } });
+  if (orderItemCount > 0) {
+    throw new AppError(
+      "This product has existing orders and can't be deleted — deactivate it instead to hide it from new customers while keeping order history intact.",
+      HttpStatus.CONFLICT
+    );
+  }
+
   await prisma.product.delete({ where: { id } });
   return res.status(HttpStatus.OK).json({ status: "success", message: "Product deleted" });
 });
@@ -121,6 +129,14 @@ export const adminDeleteVariant = catchAsync(async (req: Request, res: Response)
   const { id } = req.params;
   const variant = await prisma.productVariant.findUnique({ where: { id } });
   if (!variant) throw new AppError("Variant not found", HttpStatus.NOT_FOUND);
+
+  const orderItemCount = await prisma.orderItem.count({ where: { productVariantId: id } });
+  if (orderItemCount > 0) {
+    throw new AppError(
+      "This variant has existing orders and can't be deleted — set its stock to 0 instead to stop new orders while keeping order history intact.",
+      HttpStatus.CONFLICT
+    );
+  }
 
   await prisma.productVariant.delete({ where: { id } });
   return res.status(HttpStatus.OK).json({ status: "success", message: "Variant deleted" });

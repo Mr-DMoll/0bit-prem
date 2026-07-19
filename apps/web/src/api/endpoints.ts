@@ -53,6 +53,8 @@ export const endpoints = {
     albums:       "/admin/music/albums",
     albumById:    (id: string) => `/admin/music/albums/${id}`,
     tracks:       (albumId: string) => `/admin/music/albums/${albumId}/tracks`,
+    tracksBatch:  (albumId: string) => `/admin/music/albums/${albumId}/tracks/batch`,
+    tracksBulk:   (albumId: string) => `/admin/music/albums/${albumId}/tracks/bulk`,
     trackById:    (id: string) => `/admin/music/tracks/${id}`,
   },
 

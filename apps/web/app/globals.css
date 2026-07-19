@@ -292,6 +292,10 @@ input, textarea, select { font-family: inherit; }
   margin: 28px 0;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes pk-glow-pulse {
   0%, 100% { opacity: 0.5; }
   50%      { opacity: 0.9; }
@@ -336,10 +340,26 @@ input, textarea, select { font-family: inherit; }
   --pk-sanctum-gap:             28px;
   --pk-sanctum-gap-sm:          20px;
   --pk-sanctum-title-size:      2.9rem;
+  --pk-header-pad-h:            32px;
+  --pk-header-title-size:       36px;
 }
 
 .pk-sidebar-desktop { display: flex; }
 .pk-tabbar-mobile { display: none; }
+
+.pk-toc-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 48px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Sanctum's own transport row only exists because the mini player bar hides
+   its secondary controls (repeat/skip/speed/track list) below 640px — above
+   that, the mini player already shows all of them, so this would just be a
+   duplicate row cluttering the altar. */
+.pk-sanctum-controls { display: none; }
 
 @media (max-width: 1023px) {
   .pk-app {
@@ -353,9 +373,17 @@ input, textarea, select { font-family: inherit; }
     --pk-sanctum-gap:             20px;
     --pk-sanctum-gap-sm:          14px;
     --pk-sanctum-title-size:      2.1rem;
+    --pk-header-pad-h:            20px;
+    --pk-header-title-size:       28px;
   }
   .pk-sidebar-desktop { display: none; }
   .pk-tabbar-mobile { display: flex; }
+
+  .pk-toc-layout { flex-direction: column; gap: 24px; }
+  /* A "jump to section" nav only helps if it stays visible while you scroll —
+     it isn't sticky here, so on a phone it just disappears above the fold the
+     moment you use it once. Not worth the space; drop it below desktop. */
+  .pk-toc { display: none !important; }
 }
 
 @media (max-width: 640px) {
@@ -366,7 +394,10 @@ input, textarea, select { font-family: inherit; }
     --pk-sanctum-gap:        12px;
     --pk-sanctum-gap-sm:     8px;
     --pk-sanctum-title-size: 1.5rem;
+    --pk-header-pad-h:       16px;
+    --pk-header-title-size:  22px;
   }
   .pk-miniplayer-extra { display: none !important; }
   .pk-miniplayer-title { width: auto !important; flex: 1 1 auto !important; }
+  .pk-sanctum-controls { display: flex; }
 }

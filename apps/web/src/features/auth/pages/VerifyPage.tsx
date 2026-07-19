@@ -57,7 +57,7 @@ export default function VerifyPage() {
     setIsSubmitting(true); setError(null);
     try {
       await authService.verifyCode({ email, code: finalCode });
-      router.push("/login");
+      router.push("/staff-login");
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Invalid code. Please try again.");
       setCode(["", "", "", "", "", ""]);

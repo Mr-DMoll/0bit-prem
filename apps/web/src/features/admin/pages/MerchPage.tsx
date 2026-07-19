@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Plus, ListMusic } from "lucide-react";
 import { merchService, type Product, type ProductInput, type ProductCategory } from "../services/merch.service";
 
@@ -9,6 +10,8 @@ const CATEGORIES: ProductCategory[] = ["APPAREL", "ACCESSORIES", "BOOKS"];
 const CATEGORY_LABELS: Record<ProductCategory, string> = { APPAREL: "Apparel", ACCESSORIES: "Accessories", BOOKS: "Books" };
 import { ProductImagesField } from "../components/ProductImagesField";
 import { OrdersPage } from "./OrdersPage";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
@@ -107,6 +110,8 @@ function ProductModal({ product, onClose, onSubmit }: {
 }
 
 function ProductsTab() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [products, setProducts]   = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -129,9 +134,13 @@ function ProductsTab() {
   const handleCreate = async (input: ProductInput) => { await merchService.createProduct(input); await fetchProducts(); };
   const handleUpdate = async (id: string, input: ProductInput) => { await merchService.updateProduct(id, input); await fetchProducts(); };
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this product and all its variants?")) return;
-    await merchService.deleteProduct(id);
-    await fetchProducts();
+    if (!(await confirm({ message: "Delete this product and all its variants? This cannot be undone.", danger: true }))) return;
+    try {
+      await merchService.deleteProduct(id);
+      await fetchProducts();
+    } catch (err: any) {
+      toast(err?.response?.data?.message ?? "Failed to delete product.");
+    }
   };
 
   const priceRange = (product: Product) => {
@@ -226,7 +235,10 @@ function ProductsTab() {
 }
 
 export function MerchPage() {
-  const [tab, setTab] = useState<"products" | "orders">("products");
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<"products" | "orders">(
+    searchParams.get("tab") === "orders" ? "orders" : "products"
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

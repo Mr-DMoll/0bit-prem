@@ -11,7 +11,7 @@ export default function TableOfContents({ headings, topOffset = 24 }: { headings
   };
 
   return (
-    <nav style={{ position: "sticky", top: `${topOffset}px`, width: "220px", flexShrink: 0, alignSelf: "flex-start" }}>
+    <nav className="pk-toc" style={{ position: "sticky", top: `${topOffset}px`, width: "220px", flexShrink: 0, alignSelf: "flex-start" }}>
       <p style={{ margin: "0 0 12px", fontSize: "11px", fontWeight: 700, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
         On this page
       </p>

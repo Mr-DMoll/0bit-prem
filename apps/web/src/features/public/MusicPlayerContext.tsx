@@ -18,6 +18,7 @@ export const PLAYBACK_RATES = [0.75, 1, 1.25, 1.5, 2] as const;
 interface MusicPlayerContextType {
   nowPlaying: NowPlaying | null;
   isPlaying: boolean;
+  isBuffering: boolean;
   kickedOut: boolean;
   currentTime: number;
   duration: number;
@@ -51,6 +52,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
   const [isPlaying, setIsPlaying]   = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [kickedOut, setKickedOut]   = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration]       = useState(0);
@@ -89,6 +91,55 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
+  // isPlaying/isBuffering are mirrors of the <audio> element's own state,
+  // driven entirely by its native events — never set optimistically at a
+  // call site. Play/pause calls race against each other constantly (rapid
+  // track switching, quick play/pause taps), and the browser resolves that
+  // by aborting the loser; deriving state any other way lets it drift from
+  // what's actually playing (buttons that stop responding, "paused" tracks
+  // that keep playing).
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onWaiting = () => setIsBuffering(true);
+    const onPlaying = () => setIsBuffering(false);
+    const onCanPlay = () => setIsBuffering(false);
+    // A failed load (bad URL, network drop, unsupported format) leaves the
+    // element paused with no further events coming — without this, the UI
+    // would be stuck showing "playing"/"buffering" for a track that's dead.
+    const onError = () => {
+      setIsBuffering(false);
+      setIsPlaying(false);
+      if (audio.error) console.error("[MusicPlayer] audio element error:", audio.error.code, audio.error.message);
+    };
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    audio.addEventListener("waiting", onWaiting);
+    audio.addEventListener("playing", onPlaying);
+    audio.addEventListener("canplay", onCanPlay);
+    audio.addEventListener("error", onError);
+    return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("waiting", onWaiting);
+      audio.removeEventListener("playing", onPlaying);
+      audio.removeEventListener("canplay", onCanPlay);
+      audio.removeEventListener("error", onError);
+    };
+  }, []);
+
+  // AbortError fires whenever a play() request loses a race against a
+  // subsequent load()/pause() — completely expected when the listener taps
+  // through tracks quickly, so it's swallowed. Anything else (network
+  // failure, unsupported source) is a real problem and gets logged.
+  const safePlay = useCallback((audio: HTMLAudioElement) => {
+    audio.play().catch((err) => {
+      if (err?.name !== "AbortError") console.error("[MusicPlayer] play() failed:", err);
+    });
+  }, []);
+
   // While a logged-in user is actively playing, poll to see if another
   // device has claimed this account — if so, stop playback here.
   useEffect(() => {
@@ -125,32 +176,30 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
     if (nowPlaying?.track.id === track.id && !audio.error) {
       // Same track, no error — just resume.
-      audio.play();
-      setIsPlaying(true);
+      safePlay(audio);
       return;
     }
 
+    setCurrentTime(0);
+    setDuration(0);
     audio.src = track.audioUrl;
     audio.load();
     audio.volume = isMuted ? 0 : volume;
     audio.playbackRate = playbackRate;
-    audio.play();
     setNowPlaying({ track, albumTitle, albumCoverUrl });
-    setIsPlaying(true);
-  }, [nowPlaying, user, isMuted, volume, playbackRate]);
+    safePlay(audio);
+  }, [nowPlaying, user, isMuted, volume, playbackRate, safePlay]);
 
   const toggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !nowPlaying) return;
-    if (isPlaying) {
+    if (!audio.paused) {
       audio.pause();
-      setIsPlaying(false);
     } else {
       if (user) sessionsService.claim(getDeviceId()).catch(() => {});
-      audio.play();
-      setIsPlaying(true);
+      safePlay(audio);
     }
-  }, [isPlaying, nowPlaying, user]);
+  }, [nowPlaying, user, safePlay]);
 
   const seek = useCallback((time: number) => {
     const audio = audioRef.current;
@@ -185,7 +234,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     const onEnded = () => {
       if (repeatMode === "one") {
         audio.currentTime = 0;
-        audio.play();
+        safePlay(audio);
         return;
       }
       if (repeatMode === "all" && nowPlaying && queue.length > 0 && queueAlbum) {
@@ -196,11 +245,14 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
           return;
         }
       }
+      // Belt-and-braces — the audio element's own 'pause' event normally
+      // covers this, but end-of-track pause behavior has historically been
+      // inconsistent across browsers.
       setIsPlaying(false);
     };
     audio.addEventListener("ended", onEnded);
     return () => audio.removeEventListener("ended", onEnded);
-  }, [repeatMode, queue, queueAlbum, nowPlaying, play]);
+  }, [repeatMode, queue, queueAlbum, nowPlaying, play, safePlay]);
 
   const dismissKicked = useCallback(() => setKickedOut(false), []);
 
@@ -228,7 +280,7 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
 
   return (
     <MusicPlayerContext.Provider value={{
-      nowPlaying, isPlaying, kickedOut, currentTime, duration, queue, hasNext, hasPrevious,
+      nowPlaying, isPlaying, isBuffering, kickedOut, currentTime, duration, queue, hasNext, hasPrevious,
       volume, isMuted, repeatMode, playbackRate,
       play, toggle, seek, playNext, playPrevious, dismissKicked,
       setVolume, toggleMute, cycleRepeat, setRepeatMode, cyclePlaybackRate,

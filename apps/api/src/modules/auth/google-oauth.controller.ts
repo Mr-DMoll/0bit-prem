@@ -14,7 +14,7 @@ const ROLE_ROUTES: Record<string, string> = {
   SUPER_ADMIN: "/super-admin",
   ADMIN:       "/admin",
   MANAGER:     "/manager",
-  USER:        "/user",
+  USER:        "/",
 };
 
 const authService = new AuthService();
@@ -37,6 +37,12 @@ export function googleRedirect(req: Request, res: Response) {
     return;
   }
 
+  // "state" round-trips through Google unchanged — used to tell the staff
+  // flow (invite-only, never auto-creates) apart from the customer flow
+  // (open self-signup) on the shared callback, without needing a second
+  // OAuth client or redirect URI registered with Google.
+  const isStaffFlow = req.query.flow === "staff";
+
   const params = new URLSearchParams({
     client_id:     env.GOOGLE_CLIENT_ID,
     redirect_uri:  callbackUrl(),
@@ -44,6 +50,7 @@ export function googleRedirect(req: Request, res: Response) {
     scope:         "openid email profile",
     access_type:   "offline",
     prompt:        "select_account",
+    ...(isStaffFlow ? { state: "staff" } : {}),
   });
 
   res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
@@ -52,10 +59,18 @@ export function googleRedirect(req: Request, res: Response) {
 // ── Step 2: handle callback ────────────────────────────────────────────────────
 
 export async function googleCallback(req: Request, res: Response) {
-  const { code, error } = req.query as Record<string, string>;
+  const { code, error, state } = req.query as Record<string, string>;
+  const isStaffFlow = state === "staff";
+  // Staff has a dedicated /staff-login page with an `error` query the page reads directly.
+  // Customers have no standalone login page — sign-in happens in-layout from any page via
+  // AccountHeaderWidget, so failures redirect home with `authError`, which that widget reads.
+  const errorRedirect = (errCode: string) =>
+    isStaffFlow
+      ? `${env.FRONTEND_URL}/staff-login?error=${errCode}`
+      : `${env.FRONTEND_URL}/?authError=${errCode}`;
 
   if (error || !code) {
-    return res.redirect(`${env.FRONTEND_URL}/login?error=google_denied`);
+    return res.redirect(errorRedirect("google_denied"));
   }
 
   try {
@@ -88,7 +103,7 @@ export async function googleCallback(req: Request, res: Response) {
     const profile = profileRes.data;
 
     if (!profile.email) {
-      return res.redirect(`${env.FRONTEND_URL}/login?error=google_no_email`);
+      return res.redirect(errorRedirect("google_no_email"));
     }
 
     // Upsert user: find by googleId → find by email → create
@@ -97,21 +112,32 @@ export async function googleCallback(req: Request, res: Response) {
     });
 
     if (!user) {
-      user = await prisma.user.findUnique({
+      const existing = await prisma.user.findUnique({
         where: { email: profile.email.toLowerCase() },
       });
 
-      if (user) {
+      if (existing) {
+        // Staff sign-in must already be an invited ADMIN/MANAGER/SUPER_ADMIN
+        // account — a customer (role USER) trying the staff path is rejected,
+        // never silently promoted.
+        if (isStaffFlow && existing.role === "USER") {
+          return res.redirect(`${env.FRONTEND_URL}/staff-login?error=not_staff`);
+        }
+
         // Link existing account to Google
         user = await prisma.user.update({
-          where: { id: user.id },
+          where: { id: existing.id },
           data:  {
             googleId:           profile.id,
             googleRefreshToken: tokens.refresh_token ?? null,
-            avatarUrl:          user.avatarUrl || profile.picture || null,
-            accountStatus:      user.accountStatus === "PENDING" ? "ACTIVE" : user.accountStatus,
+            avatarUrl:          existing.avatarUrl || profile.picture || null,
+            accountStatus:      existing.accountStatus === "PENDING" ? "ACTIVE" : existing.accountStatus,
           },
         });
+      } else if (isStaffFlow) {
+        // Staff accounts are never auto-created — they must already exist
+        // via an admin/super-admin invite.
+        return res.redirect(`${env.FRONTEND_URL}/staff-login?error=not_invited`);
       } else {
         // Brand-new user via Google — always allowed with USER role
         user = await prisma.user.create({
@@ -143,10 +169,10 @@ export async function googleCallback(req: Request, res: Response) {
     }
 
     if (user.accountStatus === "SUSPENDED") {
-      return res.redirect(`${env.FRONTEND_URL}/login?error=suspended`);
+      return res.redirect(errorRedirect("suspended"));
     }
     if (user.accountStatus === "DELETED") {
-      return res.redirect(`${env.FRONTEND_URL}/login?error=not_found`);
+      return res.redirect(errorRedirect("not_found"));
     }
 
     await prisma.user.update({
@@ -166,6 +192,6 @@ export async function googleCallback(req: Request, res: Response) {
     );
   } catch (err) {
     console.error("[Google OAuth] callback error:", err);
-    res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
+    res.redirect(errorRedirect("oauth_failed"));
   }
 }

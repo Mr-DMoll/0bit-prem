@@ -1,4 +1,4 @@
-import { AllUsersPage } from "@/features/admin/pages/AllUsersPage";
-export default function TeamRoute() {
-  return <AllUsersPage />;
+import { CustomersPage } from "@/features/admin/pages/CustomersPage";
+export default function CustomersRoute() {
+  return <CustomersPage />;
 }

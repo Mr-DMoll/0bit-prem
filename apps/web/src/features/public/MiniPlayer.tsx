@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pause, SkipBack, SkipForward, Repeat, Repeat1, Maximize2, ListMusic, X } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Repeat, Repeat1, Maximize2, ListMusic, Loader2 } from "lucide-react";
 import { useMusicPlayer } from "./MusicPlayerContext";
 import VolumeControl from "./VolumeControl";
+import TrackListPanel from "./TrackListPanel";
+import LockedTrackPrompt from "./LockedTrackPrompt";
+import type { PublicTrack } from "./services/music.service";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -15,10 +18,11 @@ function formatTime(seconds: number) {
 
 export default function MiniPlayer() {
   const {
-    nowPlaying, isPlaying, kickedOut, hasNext, hasPrevious, repeatMode, currentTime, duration,
+    nowPlaying, isPlaying, isBuffering, kickedOut, hasNext, hasPrevious, repeatMode, currentTime, duration,
     queue, playbackRate, toggle, dismissKicked, playNext, playPrevious, cycleRepeat, cyclePlaybackRate, seek, play,
   } = useMusicPlayer();
   const [showQueue, setShowQueue] = useState(false);
+  const [lockedTrack, setLockedTrack] = useState<PublicTrack | null>(null);
   const router = useRouter();
   const goToSanctum = () => router.push("/");
 
@@ -47,55 +51,18 @@ export default function MiniPlayer() {
       )}
 
       {showQueue && nowPlaying && (
-        <div style={{
-          width: "100%", maxWidth: "1400px", boxSizing: "border-box", marginBottom: "8px",
-          borderRadius: "16px", background: "var(--color-sidebar-bg)", border: "1px solid var(--color-sidebar-border)",
-          boxShadow: "var(--color-card-shadow)", backdropFilter: "blur(16px)",
-          maxHeight: "40vh", display: "flex", flexDirection: "column", overflow: "hidden",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px 10px" }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                Track list
-              </h3>
-              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--color-text-muted)" }}>{nowPlaying.albumTitle}</p>
-            </div>
-            <button
-              onClick={() => setShowQueue(false)}
-              aria-label="Close track list"
-              style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", padding: "4px" }}
-            >
-              <X size={16} />
-            </button>
-          </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "0 8px 16px" }}>
-            {queue.map((track, i) => {
-              const isCurrent = track.id === nowPlaying.track.id;
-              return (
-                <button
-                  key={track.id}
-                  onClick={() => !track.isLocked && track.audioUrl && play(track, track.albumTitle ?? nowPlaying.albumTitle, track.albumCoverUrl ?? nowPlaying.albumCoverUrl, queue)}
-                  disabled={track.isLocked}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "12px", width: "100%", textAlign: "left",
-                    padding: "9px 12px", background: isCurrent ? "var(--color-accent-subtle)" : "none",
-                    border: "none", borderRadius: "var(--radius-md)",
-                    cursor: track.isLocked ? "not-allowed" : "pointer", opacity: track.isLocked ? 0.5 : 1,
-                  }}
-                >
-                  <span style={{ width: "18px", fontSize: "12px", color: isCurrent ? "var(--color-accent)" : "var(--color-text-muted)", flexShrink: 0 }}>
-                    {isCurrent && isPlaying ? "♪" : i + 1}
-                  </span>
-                  <span style={{ flex: 1, fontSize: "13px", fontWeight: isCurrent ? 700 : 400, color: isCurrent ? "var(--color-accent)" : "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {track.title}
-                  </span>
-                  <span style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>{formatTime(track.duration)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <TrackListPanel
+          queue={queue}
+          currentTrackId={nowPlaying.track.id}
+          isPlaying={isPlaying}
+          subtitle={nowPlaying.albumTitle}
+          onPlay={(track) => play(track, track.albumTitle ?? nowPlaying.albumTitle, track.albumCoverUrl ?? nowPlaying.albumCoverUrl, queue)}
+          onLockedClick={setLockedTrack}
+          onClose={() => setShowQueue(false)}
+        />
       )}
+
+      {lockedTrack && <LockedTrackPrompt track={lockedTrack} onClose={() => setLockedTrack(null)} />}
 
       <div style={{
         width: "100%", maxWidth: "1400px", boxSizing: "border-box",
@@ -149,7 +116,9 @@ export default function MiniPlayer() {
             cursor: nowPlaying ? "pointer" : "not-allowed",
           }}
         >
-          {isPlaying ? <Pause size={13} /> : <Play size={13} style={{ marginLeft: "1.5px" }} />}
+          {isBuffering && nowPlaying
+            ? <Loader2 size={13} style={{ animation: "spin 0.9s linear infinite" }} />
+            : isPlaying ? <Pause size={13} /> : <Play size={13} style={{ marginLeft: "1.5px" }} />}
         </button>
         <div className="pk-miniplayer-extra" style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
           <button onClick={playNext} disabled={!hasNext} style={smallIconStyle(hasNext)}>

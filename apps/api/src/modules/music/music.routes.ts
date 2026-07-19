@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
   adminListAlbums, adminGetAlbum, adminCreateAlbum, adminUpdateAlbum, adminDeleteAlbum,
-  adminCreateTrack, adminUpdateTrack, adminDeleteTrack,
+  adminCreateTrack, adminUpdateTrack, adminDeleteTrack, adminCreateTracksBatch, adminBulkUpdateTracks,
   listAlbums, getAlbum, purchaseAlbum, getMyAlbums, getSanctumMix,
 } from "./music.controller.js";
 import { protect, optionalAuth } from "../../middleware/auth.middleware.js";
@@ -18,9 +18,11 @@ adminMusicRouter.get("/albums/:id",          adminGetAlbum);
 adminMusicRouter.post("/albums",             adminCreateAlbum);
 adminMusicRouter.patch("/albums/:id",        adminUpdateAlbum);
 adminMusicRouter.delete("/albums/:id",       adminDeleteAlbum);
-adminMusicRouter.post("/albums/:id/tracks",  adminCreateTrack);
-adminMusicRouter.patch("/tracks/:id",        adminUpdateTrack);
-adminMusicRouter.delete("/tracks/:id",       adminDeleteTrack);
+adminMusicRouter.post("/albums/:id/tracks",       adminCreateTrack);
+adminMusicRouter.post("/albums/:id/tracks/batch", adminCreateTracksBatch);
+adminMusicRouter.patch("/albums/:id/tracks/bulk", adminBulkUpdateTracks);
+adminMusicRouter.patch("/tracks/:id",             adminUpdateTrack);
+adminMusicRouter.delete("/tracks/:id",            adminDeleteTrack);
 
 // Mounted at /music — public browsing, optional auth (gates locked tracks).
 export const publicMusicRouter = Router();

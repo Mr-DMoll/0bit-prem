@@ -19,19 +19,19 @@ export default function PageHeader({ title, action, tabs }: PageHeaderProps) {
   }, []);
 
   const content = (
-    <div style={{ padding: "24px 32px 20px" }}>
+    <div style={{ padding: "24px var(--pk-header-pad-h) 20px" }}>
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
           <h1 style={{
             fontFamily: "var(--font-cormorant), serif",
-            fontSize:   "36px",
+            fontSize:   "var(--pk-header-title-size)",
             fontWeight: 600,
             color:      "var(--color-text-primary)",
             margin:     0,
           }}>
             {title}
           </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "4px" }}>
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "14px", marginTop: "4px" }}>
             {action}
             <AccountHeaderWidget />
           </div>

@@ -9,30 +9,93 @@ import { sendInviteEmail } from "../../services/mail.service.js";
 // ── Admin dashboard ────────────────────────────────────────────────────────────
 
 export const adminDashboard = catchAsync(async (_req: Request, res: Response) => {
-  const [totalUsers, totalManagers, pendingUsers, activeUsers, recentSignups, recentActivity] =
-    await Promise.all([
-      prisma.user.count({ where: { role: "USER",    accountStatus: { not: "DELETED" } } }),
-      prisma.user.count({ where: { role: "MANAGER", accountStatus: { not: "DELETED" } } }),
-      prisma.user.count({ where: { role: "USER",    accountStatus: "PENDING" } }),
-      prisma.user.count({ where: { role: "USER",    accountStatus: "ACTIVE"  } }),
-      prisma.user.findMany({
-        where:   { role: "USER" },
-        orderBy: { createdAt: "desc" },
-        take:    5,
-        select:  { id: true, email: true, displayName: true, firstName: true, lastName: true,
-                   accountStatus: true, createdAt: true },
-      }),
-      prisma.auditLog.findMany({
-        where:   { user: { role: { in: ["USER", "MANAGER"] } } },
-        orderBy: { createdAt: "desc" },
-        take:    8,
-        include: { user: { select: { email: true, displayName: true, firstName: true, lastName: true } } },
-      }),
-    ]);
+  const now             = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const startOfThisWeek  = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const PAID_STATUSES = ["PAID", "FULFILLED"] as const;
+
+  const [
+    totalUsers, totalManagers, pendingUsers, activeUsers, newUsersThisWeek,
+    recentSignups, recentActivity,
+    albumRevenueThisMonth, albumRevenueLastMonth, albumRevenueAllTime,
+    orderRevenueThisMonth, orderRevenueLastMonth, orderRevenueAllTime,
+    ordersAwaitingFulfillment, newBookingInquiries,
+    attentionOrders, attentionBookings,
+  ] = await Promise.all([
+    prisma.user.count({ where: { role: "USER",    accountStatus: { not: "DELETED" } } }),
+    prisma.user.count({ where: { role: "MANAGER", accountStatus: { not: "DELETED" } } }),
+    prisma.user.count({ where: { role: "USER",    accountStatus: "PENDING" } }),
+    prisma.user.count({ where: { role: "USER",    accountStatus: "ACTIVE"  } }),
+    prisma.user.count({ where: { role: "USER", createdAt: { gte: startOfThisWeek } } }),
+    prisma.user.findMany({
+      where:   { role: "USER" },
+      orderBy: { createdAt: "desc" },
+      take:    5,
+      select:  { id: true, email: true, displayName: true, firstName: true, lastName: true,
+                 accountStatus: true, createdAt: true },
+    }),
+    prisma.auditLog.findMany({
+      where:   { user: { role: { in: ["USER", "MANAGER"] } } },
+      orderBy: { createdAt: "desc" },
+      take:    8,
+      include: { user: { select: { email: true, displayName: true, firstName: true, lastName: true } } },
+    }),
+    prisma.albumPurchase.aggregate({ _sum: { priceCents: true }, where: { purchasedAt: { gte: startOfThisMonth } } }),
+    prisma.albumPurchase.aggregate({ _sum: { priceCents: true }, where: { purchasedAt: { gte: startOfLastMonth, lt: startOfThisMonth } } }),
+    prisma.albumPurchase.aggregate({ _sum: { priceCents: true } }),
+    prisma.order.aggregate({ _sum: { totalCents: true }, where: { status: { in: [...PAID_STATUSES] }, createdAt: { gte: startOfThisMonth } } }),
+    prisma.order.aggregate({ _sum: { totalCents: true }, where: { status: { in: [...PAID_STATUSES] }, createdAt: { gte: startOfLastMonth, lt: startOfThisMonth } } }),
+    prisma.order.aggregate({ _sum: { totalCents: true }, where: { status: { in: [...PAID_STATUSES] } } }),
+    prisma.order.count({ where: { status: "PAID" } }),
+    prisma.bookingInquiry.count({ where: { status: "NEW" } }),
+    prisma.order.findMany({
+      where:   { status: "PAID" },
+      orderBy: { createdAt: "desc" },
+      take:    8,
+      select:  { id: true, totalCents: true, currency: true, shippingName: true, createdAt: true },
+    }),
+    prisma.bookingInquiry.findMany({
+      where:   { status: "NEW" },
+      orderBy: { createdAt: "desc" },
+      take:    8,
+      select:  { id: true, name: true, eventDetails: true, createdAt: true },
+    }),
+  ]);
+
+  const revenue = {
+    thisMonthCents: (albumRevenueThisMonth._sum.priceCents ?? 0) + (orderRevenueThisMonth._sum.totalCents ?? 0),
+    lastMonthCents: (albumRevenueLastMonth._sum.priceCents ?? 0) + (orderRevenueLastMonth._sum.totalCents ?? 0),
+    allTimeCents:   (albumRevenueAllTime._sum.priceCents ?? 0)   + (orderRevenueAllTime._sum.totalCents ?? 0),
+  };
+
+  const needsAttention = [
+    ...attentionOrders.map((o) => ({
+      type: "order" as const,
+      id: o.id,
+      label: `Order for ${o.shippingName}`,
+      subLabel: `${o.currency} ${(o.totalCents / 100).toFixed(2)} — awaiting fulfillment`,
+      createdAt: o.createdAt,
+      href: "/admin/merch?tab=orders",
+    })),
+    ...attentionBookings.map((b) => ({
+      type: "booking" as const,
+      id: b.id,
+      label: `Booking inquiry from ${b.name}`,
+      subLabel: b.eventDetails,
+      createdAt: b.createdAt,
+      href: "/admin/bookings",
+    })),
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 8);
 
   return res.status(HttpStatus.OK).json({
     status: "success",
-    data:   { totalUsers, totalManagers, pendingUsers, activeUsers, recentSignups, recentActivity },
+    data: {
+      totalUsers, totalManagers, pendingUsers, activeUsers, newUsersThisWeek,
+      recentSignups, recentActivity,
+      revenue, ordersAwaitingFulfillment, newBookingInquiries, needsAttention,
+    },
   });
 });
 

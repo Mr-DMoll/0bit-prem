@@ -3,6 +3,8 @@
 import { useEffect, useCallback, useState } from "react";
 import { UserPlus, Trash2, Mail, Pause, Play } from "lucide-react";
 import apiClient from "@/api/client";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 interface Admin {
   id:            string;
@@ -62,6 +64,8 @@ function IconBtn({
 }
 
 export default function AdminsPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [admins,    setAdmins]    = useState<Admin[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -95,31 +99,39 @@ export default function AdminsPage() {
   };
 
   const handleSuspend = async (id: string) => {
-    if (!confirm("Suspend this admin? They will be blocked from logging in.")) return;
+    if (!(await confirm({ message: "Suspend this admin? They will be blocked from logging in.", danger: true, confirmLabel: "Suspend" }))) return;
     setWorking(id);
-    await apiClient.patch(`/super-admin/admins/${id}/suspend`).catch(() => {});
+    await apiClient.patch(`/super-admin/admins/${id}/suspend`).catch((err) => {
+      toast(err?.response?.data?.message ?? "Failed to suspend admin.");
+    });
     setWorking(null);
     fetchAdmins();
   };
 
   const handleActivate = async (id: string) => {
     setWorking(id);
-    await apiClient.patch(`/super-admin/admins/${id}/activate`).catch(() => {});
+    await apiClient.patch(`/super-admin/admins/${id}/activate`).catch((err) => {
+      toast(err?.response?.data?.message ?? "Failed to activate admin.");
+    });
     setWorking(null);
     fetchAdmins();
   };
 
   const handleResend = async (id: string, email: string) => {
-    if (!confirm(`Resend invite to ${email}?`)) return;
+    if (!(await confirm({ message: `Resend invite to ${email}?`, confirmLabel: "Resend" }))) return;
     setWorking(id);
-    await apiClient.post(`/super-admin/admins/${id}/resend-invite`).catch(() => {});
+    await apiClient.post(`/super-admin/admins/${id}/resend-invite`).catch((err) => {
+      toast(err?.response?.data?.message ?? "Failed to resend invite.");
+    });
     setWorking(null);
   };
 
   const handleRemove = async (id: string, email: string) => {
-    if (!confirm(`Permanently delete admin ${email}? This cannot be undone.`)) return;
+    if (!(await confirm({ message: `Permanently delete admin ${email}? This cannot be undone.`, danger: true }))) return;
     setWorking(id);
-    await apiClient.delete(`/super-admin/admins/${id}`).catch(() => {});
+    await apiClient.delete(`/super-admin/admins/${id}`).catch((err) => {
+      toast(err?.response?.data?.message ?? "Failed to delete admin.");
+    });
     setWorking(null);
     fetchAdmins();
   };

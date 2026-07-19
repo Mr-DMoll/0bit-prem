@@ -80,6 +80,14 @@ export const adminDeleteAlbum = catchAsync(async (req: Request, res: Response) =
   const existing = await prisma.album.findUnique({ where: { id } });
   if (!existing) throw new AppError("Album not found", HttpStatus.NOT_FOUND);
 
+  const purchaseCount = await prisma.albumPurchase.count({ where: { albumId: id } });
+  if (purchaseCount > 0) {
+    throw new AppError(
+      `This album has been purchased by ${purchaseCount} customer${purchaseCount === 1 ? "" : "s"} and can't be deleted — archive it instead to hide it from new customers while keeping their purchase history intact.`,
+      HttpStatus.CONFLICT
+    );
+  }
+
   await prisma.album.delete({ where: { id } });
   return res.status(HttpStatus.OK).json({ status: "success", message: "Album deleted" });
 });
@@ -110,6 +118,71 @@ export const adminCreateTrack = catchAsync(async (req: Request, res: Response) =
   });
 
   return res.status(HttpStatus.CREATED).json({ status: "success", data: { track } });
+});
+
+export const adminCreateTracksBatch = catchAsync(async (req: Request, res: Response) => {
+  const { id: albumId } = req.params;
+  const { tracks } = req.body;
+
+  const album = await prisma.album.findUnique({ where: { id: albumId } });
+  if (!album) throw new AppError("Album not found", HttpStatus.NOT_FOUND);
+  if (!Array.isArray(tracks) || tracks.length === 0)
+    throw new AppError("tracks must be a non-empty array", HttpStatus.BAD_REQUEST);
+  for (const t of tracks) {
+    if (!t.title) throw new AppError("Each track requires a title", HttpStatus.BAD_REQUEST);
+    if (!t.audioUrl) throw new AppError("Each track requires an audioUrl", HttpStatus.BAD_REQUEST);
+  }
+
+  const last = await prisma.track.findFirst({ where: { albumId }, orderBy: { order: "desc" } });
+  let nextOrder = (last?.order ?? -1) + 1;
+
+  const created = await prisma.$transaction(
+    tracks.map((t: { title: string; audioUrl: string; isFree?: boolean; duration?: number }) =>
+      prisma.track.create({
+        data: {
+          title: t.title,
+          audioUrl: t.audioUrl,
+          isFree: !!t.isFree,
+          duration: t.duration ?? 0,
+          order: nextOrder++,
+          albumId,
+        },
+      })
+    )
+  );
+
+  return res.status(HttpStatus.CREATED).json({ status: "success", data: { tracks: created } });
+});
+
+export const adminBulkUpdateTracks = catchAsync(async (req: Request, res: Response) => {
+  const { id: albumId } = req.params;
+  const { updates, deletes } = req.body;
+
+  const album = await prisma.album.findUnique({ where: { id: albumId } });
+  if (!album) throw new AppError("Album not found", HttpStatus.NOT_FOUND);
+
+  const ops = [
+    ...((Array.isArray(updates) ? updates : []) as { id: string; title?: string; isFree?: boolean; order?: number }[]).map((u) =>
+      prisma.track.update({
+        where: { id: u.id },
+        data: {
+          ...(u.title !== undefined && { title: u.title }),
+          ...(u.isFree !== undefined && { isFree: !!u.isFree }),
+          ...(u.order !== undefined && { order: u.order }),
+        },
+      })
+    ),
+    ...((Array.isArray(deletes) ? deletes : []) as string[]).map((id) =>
+      prisma.track.delete({ where: { id } })
+    ),
+  ];
+
+  if (ops.length === 0) throw new AppError("No updates or deletes provided", HttpStatus.BAD_REQUEST);
+
+  await prisma.$transaction(ops);
+
+  const tracks = await prisma.track.findMany({ where: { albumId }, orderBy: { order: "asc" } });
+  return res.status(HttpStatus.OK).json({ status: "success", data: { tracks } });
 });
 
 export const adminUpdateTrack = catchAsync(async (req: Request, res: Response) => {
@@ -263,59 +336,49 @@ export const getMyAlbums = catchAsync(async (req: Request, res: Response) => {
 });
 
 // ── PUBLIC: Sanctum mix ─────────────────────────────────────────────────────────
-// Home-screen rotation: a logged-in customer with purchases hears everything
-// they own; everyone else (guest, brand-new account, staff) hears a sampler of
-// the free tracks across the whole catalog.
+// Home-screen rotation: the full live catalog, every time — free tracks and
+// tracks from albums the listener owns play directly; everything else shows
+// up locked (title visible, no audioUrl) so browsing itself sells the album,
+// instead of only ever surfacing the free sampler.
 
 export const getSanctumMix = catchAsync(async (req: Request, res: Response) => {
   const user = req.user ?? null;
   const isStaff = !!user && STAFF_ROLES.includes(user.role as Role);
 
+  let ownedAlbumIds = new Set<string>();
   if (user && !isStaff) {
     const purchases = await prisma.albumPurchase.findMany({
       where: { userId: user.userId },
-      include: { album: { include: { tracks: { orderBy: { order: "asc" } } } } },
-      orderBy: { purchasedAt: "desc" },
+      select: { albumId: true },
     });
-
-    if (purchases.length > 0) {
-      const tracks = purchases.flatMap(({ album }) =>
-        album.tracks.map((track) => ({
-          id: track.id,
-          title: track.title,
-          order: track.order,
-          duration: track.duration,
-          isFree: track.isFree,
-          isLocked: false,
-          audioUrl: track.audioUrl,
-          albumId: album.id,
-          albumTitle: album.title,
-          albumCoverUrl: album.coverImageUrl,
-        }))
-      );
-      return res.status(HttpStatus.OK).json({ status: "success", data: { mode: "owned", tracks } });
-    }
+    ownedAlbumIds = new Set(purchases.map((p) => p.albumId));
   }
 
   const albums = await prisma.album.findMany({
     where: { status: "LIVE" },
-    include: { tracks: { where: { isFree: true }, orderBy: { order: "asc" } } },
+    include: { tracks: { orderBy: { order: "asc" } } },
+    orderBy: { releaseDate: "desc" },
   });
 
-  const tracks = albums.flatMap((album) =>
-    album.tracks.map((track) => ({
-      id: track.id,
-      title: track.title,
-      order: track.order,
-      duration: track.duration,
-      isFree: track.isFree,
-      isLocked: false,
-      audioUrl: track.audioUrl,
-      albumId: album.id,
-      albumTitle: album.title,
-      albumCoverUrl: album.coverImageUrl,
-    }))
-  );
+  const tracks = albums.flatMap((album) => {
+    const unlocked = isStaff || ownedAlbumIds.has(album.id);
+    return album.tracks.map((track) => {
+      const accessible = track.isFree || unlocked;
+      return {
+        id: track.id,
+        title: track.title,
+        order: track.order,
+        duration: track.duration,
+        isFree: track.isFree,
+        isLocked: !accessible,
+        audioUrl: accessible ? track.audioUrl : null,
+        albumId: album.id,
+        albumTitle: album.title,
+        albumCoverUrl: album.coverImageUrl,
+      };
+    });
+  });
 
-  return res.status(HttpStatus.OK).json({ status: "success", data: { mode: "sampler", tracks } });
+  const mode = ownedAlbumIds.size > 0 ? "owned" : "sampler";
+  return res.status(HttpStatus.OK).json({ status: "success", data: { mode, tracks } });
 });

@@ -39,9 +39,9 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("auth_token");
       const { pathname } = window.location;
       const inProtectedArea = PROTECTED_PATH_PREFIXES.some((p) => pathname.startsWith(p));
-      // Avoid redirect loop on the login page itself
-      if (inProtectedArea && !pathname.startsWith("/login")) {
-        window.location.replace("/login");
+      // Avoid redirect loop on the staff login page itself
+      if (inProtectedArea && !pathname.startsWith("/staff-login")) {
+        window.location.replace("/staff-login");
       }
     }
     return Promise.reject(err);

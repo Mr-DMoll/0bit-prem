@@ -3,6 +3,8 @@ import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/shared/context/AuthContext";
 import { ThemeProvider } from "@/shared/context/ThemeContext";
+import { ConfirmProvider } from "@/shared/context/ConfirmContext";
+import { ToastProvider } from "@/shared/context/ToastContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,7 +34,11 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <AuthProvider>
-            {children}
+            <ConfirmProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </ConfirmProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { ArrowUp, ArrowDown, Plus, Trash2 } from "lucide-react";
 import { galleryService, type GalleryImageItem } from "../services/gallery.service";
 import { FileUploadField } from "../components/FileUploadField";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 const inputStyle: React.CSSProperties = {
   padding: "9px 12px", background: "var(--color-bg-subtle)", border: "1px solid var(--color-border)",
@@ -47,6 +49,8 @@ function AddImageRow({ onSubmit }: { onSubmit: (input: { url: string; caption?: 
 }
 
 export function GalleryPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [images, setImages]       = useState<GalleryImageItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -67,9 +71,13 @@ export function GalleryPage() {
 
   const handleAdd = async (input: { url: string; caption?: string }) => { await galleryService.createImage(input); await fetchImages(); };
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this image?")) return;
-    await galleryService.deleteImage(id);
-    await fetchImages();
+    if (!(await confirm({ message: "Delete this image?", danger: true }))) return;
+    try {
+      await galleryService.deleteImage(id);
+      await fetchImages();
+    } catch (err: any) {
+      toast(err?.response?.data?.message ?? "Failed to delete image.");
+    }
   };
   const handleReorder = async (id: string, direction: "up" | "down") => {
     const idx = images.findIndex((img) => img.id === id);

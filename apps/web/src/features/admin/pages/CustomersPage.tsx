@@ -11,11 +11,7 @@ const inputStyle: React.CSSProperties = {
   outline: "none", boxSizing: "border-box",
   transition: "border-color 0.15s, box-shadow 0.15s",
 };
-const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: "12px", fontWeight: 600,
-  color: "var(--color-text-muted)", marginBottom: "6px",
-  textTransform: "uppercase", letterSpacing: "0.06em",
-};
+
 const focusBorder = (e: React.FocusEvent<HTMLInputElement>) => {
   e.target.style.borderColor = "var(--color-accent)";
   e.target.style.boxShadow   = "0 0 0 3px var(--color-accent-subtle)";
@@ -37,19 +33,6 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span style={{ ...s, display: "inline-flex", alignItems: "center", padding: "2px 10px", borderRadius: "var(--radius-pill)", fontSize: "11px", fontWeight: 600 }}>
       {status.charAt(0) + status.slice(1).toLowerCase()}
-    </span>
-  );
-}
-
-function RoleBadge({ role }: { role: string }) {
-  const map: Record<string, React.CSSProperties> = {
-    MANAGER: { background: "var(--color-info-subtle)", color: "var(--color-info)", border: "1px solid rgba(59,130,246,0.25)"     },
-    USER:    { background: "var(--color-bg-subtle)",   color: "var(--color-text-secondary)", border: "1px solid var(--color-border)" },
-  };
-  const s = map[role] ?? map.USER;
-  return (
-    <span style={{ ...s, display: "inline-flex", alignItems: "center", padding: "2px 10px", borderRadius: "var(--radius-pill)", fontSize: "11px", fontWeight: 600 }}>
-      {role.charAt(0) + role.slice(1).toLowerCase()}
     </span>
   );
 }
@@ -83,15 +66,17 @@ function InviteModal({ onClose, onSubmit }: {
         boxShadow: "var(--color-card-shadow)",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "var(--color-text-primary)", margin: 0 }}>Invite User</h2>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "var(--color-text-primary)", margin: 0 }}>Invite Customer</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", fontSize: "18px", lineHeight: 1 }}>✕</button>
         </div>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>
-            <label style={labelStyle}>Email address</label>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "var(--color-text-muted)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Email address
+            </label>
             <input
               type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com" required autoFocus style={inputStyle}
+              placeholder="customer@example.com" required autoFocus style={inputStyle}
               onFocus={focusBorder} onBlur={blurBorder}
             />
           </div>
@@ -152,14 +137,14 @@ function ConfirmDialog({ title, message, confirmLabel, danger, onConfirm, onCanc
   );
 }
 
-// ── User row ───────────────────────────────────────────────────────────────────
+// ── Customer row ───────────────────────────────────────────────────────────────
 
-function UserRow({ user, onStatusChange, onRoleChange }: {
+function CustomerRow({ user, onStatusChange, onPromote }: {
   user: TeamUser;
   onStatusChange: (id: string, status: string) => Promise<void>;
-  onRoleChange:   (id: string, role: string)   => Promise<void>;
+  onPromote:      (id: string) => Promise<void>;
 }) {
-  const [confirm, setConfirm] = useState<"suspend" | "activate" | "promote" | "demote" | null>(null);
+  const [confirm, setConfirm] = useState<"suspend" | "activate" | "promote" | null>(null);
   const [hovered, setHovered] = useState(false);
 
   const displayName =
@@ -192,7 +177,6 @@ function UserRow({ user, onStatusChange, onRoleChange }: {
             </div>
           </div>
         </td>
-        <td style={{ padding: "14px 16px" }}><RoleBadge role={user.role} /></td>
         <td style={{ padding: "14px 16px" }}><StatusBadge status={user.accountStatus} /></td>
         <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--color-text-muted)" }}>
           {new Date(user.createdAt).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}
@@ -209,46 +193,39 @@ function UserRow({ user, onStatusChange, onRoleChange }: {
                 Activate
               </button>
             )}
-            {user.role === "USER" && user.accountStatus === "ACTIVE" && (
+            {user.accountStatus === "ACTIVE" && (
               <button onClick={() => setConfirm("promote")} style={{ padding: "4px 10px", fontSize: "12px", fontWeight: 500, color: "var(--color-info)", background: "var(--color-info-subtle)", border: "1px solid rgba(59,130,246,0.25)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>
                 → Manager
-              </button>
-            )}
-            {user.role === "MANAGER" && (
-              <button onClick={() => setConfirm("demote")} style={{ padding: "4px 10px", fontSize: "12px", fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-bg-subtle)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>
-                → User
               </button>
             )}
           </div>
         </td>
       </tr>
 
-      {confirm === "suspend"  && <ConfirmDialog title="Suspend user?"       message={`${displayName} will lose access immediately.`}                       confirmLabel="Suspend"  danger onConfirm={async () => { await onStatusChange(user.id, "SUSPENDED"); setConfirm(null); }} onCancel={() => setConfirm(null)} />}
-      {confirm === "activate" && <ConfirmDialog title="Activate user?"      message={`${displayName} will regain full access.`}                            confirmLabel="Activate"       onConfirm={async () => { await onStatusChange(user.id, "ACTIVE");    setConfirm(null); }} onCancel={() => setConfirm(null)} />}
-      {confirm === "promote"  && <ConfirmDialog title="Promote to manager?" message={`${displayName} will become a manager with expanded permissions.`}    confirmLabel="Promote"        onConfirm={async () => { await onRoleChange(user.id, "MANAGER");  setConfirm(null); }} onCancel={() => setConfirm(null)} />}
-      {confirm === "demote"   && <ConfirmDialog title="Change to user?"     message={`${displayName} will lose manager permissions.`}                      confirmLabel="Change"         onConfirm={async () => { await onRoleChange(user.id, "USER");     setConfirm(null); }} onCancel={() => setConfirm(null)} />}
+      {confirm === "suspend"  && <ConfirmDialog title="Suspend customer?"     message={`${displayName} will lose access immediately.`}                       confirmLabel="Suspend"  danger onConfirm={async () => { await onStatusChange(user.id, "SUSPENDED"); setConfirm(null); }} onCancel={() => setConfirm(null)} />}
+      {confirm === "activate" && <ConfirmDialog title="Activate customer?"    message={`${displayName} will regain full access.`}                            confirmLabel="Activate"       onConfirm={async () => { await onStatusChange(user.id, "ACTIVE");    setConfirm(null); }} onCancel={() => setConfirm(null)} />}
+      {confirm === "promote"  && <ConfirmDialog title="Promote to manager?"   message={`${displayName} will become a manager and move to the Managers list.`} confirmLabel="Promote"        onConfirm={async () => { await onPromote(user.id); setConfirm(null); }} onCancel={() => setConfirm(null)} />}
     </>
   );
 }
 
-// ── ALL USERS PAGE ─────────────────────────────────────────────────────────────
+// ── CUSTOMERS PAGE ──────────────────────────────────────────────────────────────
+// Customers only (role: USER) — Managers live entirely on their own page now,
+// so there's no tab here that can accidentally mix the two lists together.
 
-type RoleTab = "ALL" | "MANAGER" | "USER";
-
-export function AllUsersPage() {
+export function CustomersPage() {
   const [users,      setUsers]      = useState<TeamUser[]>([]);
   const [isLoading,  setIsLoading]  = useState(true);
   const [error,      setError]      = useState<string | null>(null);
-  const [activeTab,  setActiveTab]  = useState<RoleTab>("ALL");
   const [showInvite, setShowInvite] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
       setIsLoading(true); setError(null);
-      const res = await adminService.getUsers();
+      const res = await adminService.getUsers({ role: "USER" });
       setUsers(res.data?.users ?? []);
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Failed to load users.");
+      setError(err?.response?.data?.message ?? "Failed to load customers.");
     } finally {
       setIsLoading(false);
     }
@@ -261,23 +238,16 @@ export function AllUsersPage() {
     setUsers((prev) => prev.map((u) => u.id === id ? { ...u, accountStatus: status } : u));
   };
 
-  const handleRoleChange = async (id: string, role: string) => {
-    await adminService.updateUserRole(id, role);
-    setUsers((prev) => prev.map((u) => u.id === id ? { ...u, role } : u));
+  const handlePromote = async (id: string) => {
+    await adminService.updateUserRole(id, "MANAGER");
+    // Promoted accounts belong on the Managers page now, not here.
+    setUsers((prev) => prev.filter((u) => u.id !== id));
   };
 
   const handleInvite = async (email: string) => {
     await adminService.inviteUser(email);
     await fetchUsers();
   };
-
-  const tabs: { key: RoleTab; label: string }[] = [
-    { key: "ALL",     label: `All (${users.length})` },
-    { key: "MANAGER", label: `Managers (${users.filter((u) => u.role === "MANAGER").length})` },
-    { key: "USER",    label: `Users (${users.filter((u) => u.role === "USER").length})` },
-  ];
-
-  const filtered = activeTab === "ALL" ? users : users.filter((u) => u.role === activeTab);
 
   const activeCount    = users.filter((u) => u.accountStatus === "ACTIVE").length;
   const pendingCount   = users.filter((u) => u.accountStatus === "PENDING").length;
@@ -289,14 +259,14 @@ export function AllUsersPage() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--color-text-primary)", margin: "0 0 4px" }}>All Users</h1>
-          <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: 0 }}>Manage users and managers on the platform</p>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--color-text-primary)", margin: "0 0 4px" }}>Customers</h1>
+          <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: 0 }}>Everyone who buys music or merch — managers live on their own page</p>
         </div>
         <button
           onClick={() => setShowInvite(true)}
           style={{ padding: "9px 16px", background: "var(--color-accent)", border: "none", borderRadius: "var(--radius-md)", fontSize: "13px", fontWeight: 700, color: "var(--color-accent-text)", cursor: "pointer" }}
         >
-          + Invite User
+          + Invite Customer
         </button>
       </div>
 
@@ -317,26 +287,6 @@ export function AllUsersPage() {
         ))}
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid var(--color-border)" }}>
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{
-              padding: "8px 16px", fontSize: "13px", fontWeight: 500,
-              background: "none", border: "none", cursor: "pointer",
-              color: activeTab === key ? "var(--color-text-primary)" : "var(--color-text-muted)",
-              borderBottom: activeTab === key ? "2px solid var(--color-accent)" : "2px solid transparent",
-              marginBottom: "-1px",
-              transition: "color 0.15s",
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
       {/* Table */}
       <div style={{ background: "var(--color-card-bg)", border: "1px solid var(--color-card-border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--color-card-shadow)" }}>
         {isLoading ? (
@@ -349,19 +299,19 @@ export function AllUsersPage() {
           <div style={{ padding: "48px", textAlign: "center" }}>
             <p style={{ fontSize: "13px", color: "var(--color-danger)", margin: 0 }}>{error}</p>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : users.length === 0 ? (
           <div style={{ padding: "56px", textAlign: "center" }}>
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: "0 0 4px" }}>No users yet</p>
-            <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: "0 0 20px" }}>Invite users to get started</p>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: "0 0 4px" }}>No customers yet</p>
+            <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: "0 0 20px" }}>Invite customers to get started</p>
             <button onClick={() => setShowInvite(true)} style={{ padding: "9px 18px", background: "var(--color-accent)", border: "none", borderRadius: "var(--radius-md)", fontSize: "13px", fontWeight: 700, color: "var(--color-accent-text)", cursor: "pointer" }}>
-              Invite first user
+              Invite first customer
             </button>
           </div>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "var(--color-bg-subtle)", borderBottom: "1px solid var(--color-border)" }}>
-                {["User", "Role", "Status", "Joined", "Actions"].map((h) => (
+                {["Customer", "Status", "Joined", "Actions"].map((h) => (
                   <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "11px", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                     {h}
                   </th>
@@ -369,8 +319,8 @@ export function AllUsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
-                <UserRow key={u.id} user={u} onStatusChange={handleStatusChange} onRoleChange={handleRoleChange} />
+              {users.map((u) => (
+                <CustomerRow key={u.id} user={u} onStatusChange={handleStatusChange} onPromote={handlePromote} />
               ))}
             </tbody>
           </table>

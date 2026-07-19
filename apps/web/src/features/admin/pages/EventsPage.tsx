@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { eventsService, type EventItem, type EventInput } from "../services/events.service";
 import { FileUploadField } from "../components/FileUploadField";
+import { useConfirm } from "@/shared/context/ConfirmContext";
+import { useToast } from "@/shared/context/ToastContext";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
@@ -144,6 +146,8 @@ function EventModal({ event, onClose, onSubmit }: {
 }
 
 export function EventsPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [events, setEvents]       = useState<EventItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError]         = useState<string | null>(null);
@@ -166,9 +170,13 @@ export function EventsPage() {
   const handleCreate = async (input: EventInput) => { await eventsService.createEvent(input); await fetchEvents(); };
   const handleUpdate = async (id: string, input: EventInput) => { await eventsService.updateEvent(id, input); await fetchEvents(); };
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this event?")) return;
-    await eventsService.deleteEvent(id);
-    await fetchEvents();
+    if (!(await confirm({ message: "Delete this event?", danger: true }))) return;
+    try {
+      await eventsService.deleteEvent(id);
+      await fetchEvents();
+    } catch (err: any) {
+      toast(err?.response?.data?.message ?? "Failed to delete event.");
+    }
   };
 
   return (

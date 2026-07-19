@@ -128,7 +128,7 @@ export default function TopNav() {
   const handleLogout = async () => {
     setDropdownOpen(false);
     await logout();
-    router.push("/login");
+    router.push("/staff-login");
   };
 
   return (
