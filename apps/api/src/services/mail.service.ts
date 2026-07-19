@@ -79,6 +79,29 @@ export async function sendPasswordResetEmail(
   });
 }
 
+// ── Booking inquiry notification (to staff) ────────────────────────────────────
+
+export async function sendBookingNotificationEmail(
+  to: string[], inquiry: { name: string; email: string; phone?: string | null; eventDetails: string; message?: string | null }
+) {
+  if (to.length === 0) return;
+  await send({
+    from:    FROM,
+    to,
+    subject: `New booking inquiry from ${inquiry.name}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+        <h2>New booking inquiry</h2>
+        <p><strong>Name:</strong> ${inquiry.name}</p>
+        <p><strong>Email:</strong> ${inquiry.email}</p>
+        ${inquiry.phone ? `<p><strong>Phone:</strong> ${inquiry.phone}</p>` : ""}
+        <p><strong>Event details:</strong><br/>${inquiry.eventDetails}</p>
+        ${inquiry.message ? `<p><strong>Message:</strong><br/>${inquiry.message}</p>` : ""}
+      </div>
+    `,
+  });
+}
+
 // ── Verification code email ────────────────────────────────────────────────────
 
 export async function sendVerificationCodeEmail(

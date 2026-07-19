@@ -1,6 +1,6 @@
 export const BRAND = {
-  name:     "YourApp",
-  tagline:  "Your product tagline goes here.",
-  logoMark: "Y",
+  name:     "Premvkay",
+  tagline:  "His own Spotify.",
+  logoMark: "P",
   year:     new Date().getFullYear(),
 } as const;

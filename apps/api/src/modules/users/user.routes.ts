@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { protect } from "../../middleware/auth.middleware.js";
-import { getProfile, updateProfile, changePassword } from "./user.controller.js";
+import { getProfile, updateProfile, changePassword, presignAvatar } from "./user.controller.js";
 
 const router = Router();
 router.use(protect);
@@ -37,5 +37,16 @@ router.patch("/me", updateProfile);
  *       - cookieAuth: []
  */
 router.patch("/me/password", changePassword);
+
+/**
+ * @openapi
+ * /api/v1/users/profile/avatar/presign:
+ *   post:
+ *     tags: [Users]
+ *     summary: Get a presigned upload URL for the current user's avatar
+ *     security:
+ *       - cookieAuth: []
+ */
+router.post("/profile/avatar/presign", presignAvatar);
 
 export default router;

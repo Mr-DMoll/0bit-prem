@@ -9,6 +9,7 @@ import {
   LayoutDashboard, FolderKanban, Users, UserCircle,
   FileText, Receipt, UsersRound, Activity, ScrollText,
   Settings, Shield, ToggleLeft, Plug,
+  Music, ShoppingBag, CalendarDays, Images, Mail,
   ChevronRight, ChevronLeft,
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?
   LayoutDashboard, FolderKanban, Users, UserCircle,
   FileText, Receipt, UsersRound, Activity, ScrollText,
   Settings, Shield, ToggleLeft, Plug,
+  Music, ShoppingBag, CalendarDays, Images, Mail,
 };
 
 interface Props {

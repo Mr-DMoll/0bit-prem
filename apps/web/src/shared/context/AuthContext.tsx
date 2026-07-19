@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { authService } from "@/features/auth/services/auth.service";
-import { useRouter } from "next/navigation";
 
 export type UserRole = "SUPER_ADMIN" | "ADMIN" | "MANAGER" | "USER";
 
@@ -18,6 +17,13 @@ export interface AuthUser {
   country?: string | null;
   language?: string | null;
   dateOfBirth?: string | null;
+  shippingName?: string | null;
+  shippingPhone?: string | null;
+  shippingLine1?: string | null;
+  shippingLine2?: string | null;
+  shippingCity?: string | null;
+  shippingPostalCode?: string | null;
+  shippingCountry?: string | null;
   accountStatus: string;
   createdAt?: string | null;
 }
@@ -33,17 +39,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ROLE_ROUTES: Record<string, string> = {
+export const ROLE_ROUTES: Record<string, string> = {
   SUPER_ADMIN: "/super-admin",
   ADMIN:       "/admin",
   MANAGER:     "/manager",
-  USER:        "/user",
+  USER:        "/",
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter(); // ← moved inside the component
 
   const loadUser = async () => {
     try {
@@ -60,15 +65,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { loadUser(); }, []);
 
-  const login = async (email: string, password: string) => {   
-
-    const response = await authService.login({ email, password });  
+  const login = async (email: string, password: string) => {
+    const response = await authService.login({ email, password });
     const { user, token } = response.data ?? {};
-
 
     if (token) localStorage.setItem("auth_token", token);
     setUser(user ?? null);
-    if (user) {
+    if (user && user.role !== "USER") {
       window.location.href = ROLE_ROUTES[user.role] ?? "/";
     }
   };
@@ -77,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await authService.logout();
     localStorage.removeItem("auth_token");
     setUser(null);
-    router.push("/login");
   };
 
   return (

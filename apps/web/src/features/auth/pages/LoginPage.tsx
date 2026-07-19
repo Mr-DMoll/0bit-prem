@@ -3,15 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/shared/context/AuthContext";
+import { useAuth, ROLE_ROUTES } from "@/shared/context/AuthContext";
 import { BRAND } from "@/shared/config/branding.config";
-
-const ROLE_ROUTES: Record<string, string> = {
-  SUPER_ADMIN: "/super-admin",
-  ADMIN:       "/admin",
-  MANAGER:     "/manager",
-  USER:        "/user",
-};
 
 const OAUTH_ERRORS: Record<string, string> = {
   google_denied:  "Google sign-in was cancelled.",

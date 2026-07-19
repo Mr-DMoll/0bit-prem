@@ -55,6 +55,34 @@ export const protect = async (
   }
 };
 
+// Populates req.user if a valid session exists, but never rejects the
+// request — for public routes that still need to know "is this visitor
+// logged in" (e.g. gating a locked track) without requiring login to browse.
+export const optionalAuth = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+    if (!token) return next();
+
+    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const currentUser = await prisma.user.findUnique({ where: { id: decoded.userId } });
+
+    if (currentUser && currentUser.accountStatus !== AccountStatus.SUSPENDED && currentUser.accountStatus !== AccountStatus.DELETED) {
+      req.user = {
+        userId: currentUser.id,
+        role:   currentUser.role as Role,
+        email:  currentUser.email,
+      };
+    }
+  } catch {
+    // Invalid/expired token on a public route — proceed as anonymous.
+  }
+  next();
+};
+
 export const restrictTo = (...roles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role as Role)) {

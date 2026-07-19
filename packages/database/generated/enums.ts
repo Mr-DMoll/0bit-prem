@@ -36,3 +36,68 @@ export const RegistrationMode = {
 } as const
 
 export type RegistrationMode = (typeof RegistrationMode)[keyof typeof RegistrationMode]
+
+
+export const AlbumStatus = {
+  DRAFT: 'DRAFT',
+  LIVE: 'LIVE',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type AlbumStatus = (typeof AlbumStatus)[keyof typeof AlbumStatus]
+
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  FULFILLED: 'FULFILLED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
+
+
+export const ProductCategory = {
+  APPAREL: 'APPAREL',
+  ACCESSORIES: 'ACCESSORIES',
+  BOOKS: 'BOOKS'
+} as const
+
+export type ProductCategory = (typeof ProductCategory)[keyof typeof ProductCategory]
+
+
+export const PaymentPurpose = {
+  ALBUM_PURCHASE: 'ALBUM_PURCHASE',
+  MERCH_ORDER: 'MERCH_ORDER'
+} as const
+
+export type PaymentPurpose = (typeof PaymentPurpose)[keyof typeof PaymentPurpose]
+
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const BookingStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  CONFIRMED: 'CONFIRMED',
+  DECLINED: 'DECLINED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
+
+
+export const EventCategory = {
+  GENERAL: 'GENERAL',
+  HARINAM: 'HARINAM'
+} as const
+
+export type EventCategory = (typeof EventCategory)[keyof typeof EventCategory]

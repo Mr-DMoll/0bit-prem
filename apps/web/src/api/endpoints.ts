@@ -48,6 +48,92 @@ export const endpoints = {
     managerInvite: "/admin/managers/invite",
   },
 
+  // Music (admin content management)
+  adminMusic: {
+    albums:       "/admin/music/albums",
+    albumById:    (id: string) => `/admin/music/albums/${id}`,
+    tracks:       (albumId: string) => `/admin/music/albums/${albumId}/tracks`,
+    trackById:    (id: string) => `/admin/music/tracks/${id}`,
+  },
+
+  // Music (public browse/stream/buy)
+  music: {
+    albums:    "/music/albums",
+    albumById: (id: string) => `/music/albums/${id}`,
+    purchase:  (id: string) => `/music/albums/${id}/purchase`,
+    myAlbums:  "/music/my-albums",
+    sanctumMix: "/music/sanctum-mix",
+  },
+
+  // Events (admin + public)
+  adminEvents: {
+    list:   "/admin/events",
+    byId:   (id: string) => `/admin/events/${id}`,
+  },
+  events: {
+    list: "/events",
+    byId: (id: string) => `/events/${id}`,
+  },
+
+  // Gallery (admin + public)
+  adminGallery: {
+    list: "/admin/gallery",
+    byId: (id: string) => `/admin/gallery/${id}`,
+  },
+  gallery: {
+    list: "/gallery",
+  },
+
+  // Bookings (admin + public)
+  adminBookings: {
+    list:         "/admin/bookings",
+    updateStatus: (id: string) => `/admin/bookings/${id}/status`,
+  },
+  bookings: {
+    submit: "/bookings",
+  },
+
+  // Sessions (single-device playback enforcement)
+  sessions: {
+    claim: "/sessions/claim",
+    check: "/sessions/check",
+  },
+
+  // Uploads (admin file uploads to R2)
+  adminUploads: {
+    presign: "/admin/uploads/presign",
+  },
+
+  // Content (About/Contact/Harinam text, admin + public)
+  adminContent: {
+    get: "/admin/content",
+  },
+  content: {
+    get: "/content",
+  },
+
+  // Merch (admin catalog management)
+  adminMerch: {
+    products:    "/admin/merch/products",
+    productById: (id: string) => `/admin/merch/products/${id}`,
+    variants:    (productId: string) => `/admin/merch/products/${productId}/variants`,
+    variantById: (id: string) => `/admin/merch/variants/${id}`,
+  },
+
+  // Merch (public browse/checkout)
+  merch: {
+    products:    "/merch/products",
+    productById: (id: string) => `/merch/products/${id}`,
+    checkout:    "/merch/checkout",
+    myOrders:    "/merch/my-orders",
+  },
+
+  // Merch orders (Admin + Manager fulfillment)
+  merchOrders: {
+    list:         "/merch-orders",
+    updateStatus: (id: string) => `/merch-orders/${id}/status`,
+  },
+
   // Projects
   projects: {
     list:         "/projects",

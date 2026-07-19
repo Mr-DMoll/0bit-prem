@@ -1,0 +1,92 @@
+# Premvkay — Build TODO
+
+Living checklist for the whole app. Update this as work lands — check items off, add new ones as they're discovered. This is the source of truth for "what's left," independent of chat history.
+
+Legend: `[x]` done & verified live · `[~]` partial / in progress · `[ ]` not started
+
+---
+
+## Foundation — done
+
+- [x] Prisma schema — all core models (Album/Track/AlbumPurchase, Product/ProductVariant/Order/OrderItem, PaymentTransaction, BookingInquiry, GalleryImage, Event, User.activeDeviceId)
+- [x] Nav/IA — dashboard shell (Super Admin/Admin/Manager) + public app shell (8 pages + Account)
+- [x] Design skin — Premvkay amber/near-black palette, Cormorant Garamond/Inter, floating sidebar, floating mini-player
+
+## Music — done
+
+- [x] Admin: album CRUD, track CRUD, reorder
+- [x] Public: browse albums, album detail, free/locked gating, real audio streaming via mini-player
+- [x] Buy-album flow (records purchase directly — no real payment processor yet, by design for now)
+
+## Events / Gallery / Bookings — done
+
+- [x] Events: admin CRUD + public upcoming/past split
+- [x] Gallery: admin CRUD with reorder + public grid
+- [x] Bookings: public inquiry form (on Contact page) + email notification to staff + admin triage (status workflow)
+
+## File storage — done
+
+- [x] R2 bucket created (`premvkay-record`), credentials added to `.env`
+- [x] `s3.service.ts` implemented (presigned uploads), `/admin/uploads/presign` endpoint working
+- [x] Real upload UI wired into Music, Events, Gallery (paste-a-URL removed)
+- [x] CORS policy added via the Cloudflare dashboard
+- [x] Verified end-to-end live: real file uploaded through the admin UI, confirmed in R2, confirmed rendering on the public Gallery page
+- [ ] Note: current public dev URL (`*.r2.dev`) is fine for now; Cloudflare recommends a custom domain before production
+
+## Merch — done
+
+- [x] Admin: Product/ProductVariant CRUD with multi-image upload
+- [x] Shared Orders/fulfillment view used by both Admin and Manager (`/merch-orders` API, `[ADMIN, MANAGER]`)
+- [x] Public: browse, product detail, real cart (localStorage-persisted), checkout with shipping form
+- [x] Verified end-to-end live: real product created, cart survived login, order placed, DB rows + stock decrement confirmed, both Admin and Manager see and can fulfill the same order
+
+## Account page — done
+
+- [x] API: "my purchased albums" + "my orders" endpoints
+- [x] UI: real purchase/order history + profile — verified live for both a customer with purchases and an empty account
+
+## Content management — done
+
+- [x] Admin About/Contact/Harinam text editor (`ContentPage`), backed by the existing `SystemSetting` key/value store, own whitelisted module separate from Super-Admin platform settings
+- [x] Public About page reads real content
+- [x] Public Contact page shows real email/phone/socials alongside the booking form
+
+## Harinam — done
+
+- [x] Decision: reuses the `Event` model, plus one new `category` field (`GENERAL`/`HARINAM`)
+- [x] Admin manages both from the same Events page (category selector added)
+- [x] Public `/harinam` page built, `/events` filtered to exclude Harinam sessions — verified live, no duplication
+
+## Anti-piracy / security — done
+
+- [x] Single-device session enforcement — `/sessions/claim` + `/sessions/check`, polled every 5s while playing; verified live (second device claiming the account stops the first device's playback with a dismissible message, replaying re-claims)
+
+## Payments — deferred, real work later
+
+- [ ] Real PayFast once-off integration (replaces "record purchase directly" in both Music and Merch)
+- [ ] PayFast sandbox credentials in `.env` (not present yet)
+- [ ] ITN webhook handling
+
+## Auth / accounts — needs attention
+
+- [ ] **`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` in `.env` are still placeholder values** — real Google sign-in cannot work at all right now, code is wired but has no real credentials
+- [ ] Once real credentials are added, verify the full Google OAuth flow end-to-end (only tested with email/password test accounts so far)
+- [ ] Confirm the Super Admin → Admin bootstrap flow still works as documented (untouched since the template's own setup)
+
+## Listener UI polish pass — done
+
+- [x] Merch: `Product.category` (Apparel/Accessories/Books), public filter pills, professional product detail page (image gallery + thumbnails, variant pills, quantity stepper, stock messaging, category breadcrumb, related products row)
+- [x] Account: rebuilt as tabs (Overview/My Albums/My Orders/Profile/Address), expandable order detail, real avatar upload (new customer-facing `POST /users/profile/avatar/presign`), saved default shipping address that prefills Merch checkout, visible Log out button
+- [x] Gallery: iPad-style `Lightbox` component (thumbnail strip, arrow-key nav, prev/next), seeded 12 images
+- [x] Events: public event detail page (`/events/[eventId]`), `EventCard` now links through, seeded more GENERAL + HARINAM events
+- [x] Harinam: real structured content from the client's brief rendered via `marked` (Reasons We Chant, Who Is Hari, Who Is Gauranga, Duty, Śikṣāṣṭakam, Sankirtan, Harinam Cintamani, Prabhupada quotes)
+- [x] About: editorial layout (hero + lede + `marked`-rendered body), richer placeholder bio
+- [x] Contact: fixed dead-space layout (form/sidebar now properly fill the content width)
+- [x] Fixed a real bug found during verification: `GET /auth/me` (used by `AuthContext` on every page load) had its own stale field-select missing city/country/language/dateOfBirth and all shipping fields — silently broke the new Address-prefill feature until fixed to match `/users/me`'s select
+
+## UI polish — after the above
+
+- [ ] Sanctum "now playing" real screen — currently an atmospheric placeholder even while a track is actively playing elsewhere on the site
+- [ ] Full responsive/mobile layout pass
+- [ ] Loading/empty state consistency pass across all pillars
+- [ ] Accessibility pass

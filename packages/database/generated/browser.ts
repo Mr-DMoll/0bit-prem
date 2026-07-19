@@ -37,3 +37,58 @@ export type Notification = Prisma.NotificationModel
  * 
  */
 export type SystemSetting = Prisma.SystemSettingModel
+/**
+ * Model Album
+ * 
+ */
+export type Album = Prisma.AlbumModel
+/**
+ * Model Track
+ * 
+ */
+export type Track = Prisma.TrackModel
+/**
+ * Model AlbumPurchase
+ * 
+ */
+export type AlbumPurchase = Prisma.AlbumPurchaseModel
+/**
+ * Model Product
+ * 
+ */
+export type Product = Prisma.ProductModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel
+/**
+ * Model Order
+ * 
+ */
+export type Order = Prisma.OrderModel
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = Prisma.OrderItemModel
+/**
+ * Model PaymentTransaction
+ * 
+ */
+export type PaymentTransaction = Prisma.PaymentTransactionModel
+/**
+ * Model BookingInquiry
+ * 
+ */
+export type BookingInquiry = Prisma.BookingInquiryModel
+/**
+ * Model GalleryImage
+ * 
+ */
+export type GalleryImage = Prisma.GalleryImageModel
+/**
+ * Model Event
+ * 
+ */
+export type Event = Prisma.EventModel

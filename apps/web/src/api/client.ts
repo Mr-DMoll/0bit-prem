@@ -26,13 +26,21 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Routes that require an authenticated session — a 401 here means "your
+// session died, go log in." A 401 anywhere else (e.g. the public Premvkay
+// app checking "am I logged in?" on mount) is a normal logged-out state,
+// not an error, so it must not force a redirect away from public pages.
+const PROTECTED_PATH_PREFIXES = ["/admin", "/manager", "/super-admin"];
+
 apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("auth_token");
+      const { pathname } = window.location;
+      const inProtectedArea = PROTECTED_PATH_PREFIXES.some((p) => pathname.startsWith(p));
       // Avoid redirect loop on the login page itself
-      if (!window.location.pathname.startsWith("/login")) {
+      if (inProtectedArea && !pathname.startsWith("/login")) {
         window.location.replace("/login");
       }
     }

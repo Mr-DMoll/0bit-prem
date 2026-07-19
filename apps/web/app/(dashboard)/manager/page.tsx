@@ -20,16 +20,16 @@ export default function ManagerDashboard() {
           Good day, {displayName.split(" ")[0]}
         </h1>
         <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: 0 }}>
-          Here's a summary of your projects
+          Here's a summary of merch orders to fulfill
         </p>
       </div>
 
       {/* Quick links */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
         {[
-          { href: "/manager/projects", label: "My Projects",     icon: "📁", desc: "View and manage projects"  },
-          { href: "/profile",          label: "Profile",          icon: "👤", desc: "Update your information"  },
-          { href: "/settings",         label: "Settings",         icon: "⚙️", desc: "Manage your account"      },
+          { href: "/manager/orders", label: "Orders",   icon: "📦", desc: "Fulfill merch orders"       },
+          { href: "/profile",        label: "Profile",  icon: "👤", desc: "Update your information"     },
+          { href: "/settings",       label: "Settings", icon: "⚙️", desc: "Manage your account"         },
         ].map(({ href, label, icon, desc }) => (
           <Link key={href} href={href} style={{ textDecoration: "none" }}>
             <div style={{
@@ -51,16 +51,16 @@ export default function ManagerDashboard() {
         ))}
       </div>
 
-      {/* Projects placeholder */}
+      {/* Orders placeholder */}
       <div style={{ background: "var(--color-card-bg)", border: "1px solid var(--color-card-border)", borderRadius: "12px", overflow: "hidden" }}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: 0 }}>Recent Projects</h3>
-          <Link href="/manager/projects" style={{ fontSize: "12px", color: "var(--color-accent)", textDecoration: "none" }}>View all →</Link>
+          <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: 0 }}>Recent Orders</h3>
+          <Link href="/manager/orders" style={{ fontSize: "12px", color: "var(--color-accent)", textDecoration: "none" }}>View all →</Link>
         </div>
         <div style={{ padding: "40px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: "0 0 4px" }}>No projects assigned yet</p>
+          <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)", margin: "0 0 4px" }}>No orders to fulfill yet</p>
           <p style={{ fontSize: "13px", color: "var(--color-text-muted)", margin: 0 }}>
-            Your assigned projects will appear here
+            Merch orders awaiting fulfillment will appear here
           </p>
         </div>
       </div>

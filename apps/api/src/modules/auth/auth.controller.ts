@@ -69,7 +69,9 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
       id: true, email: true, role: true, accountStatus: true,
       firstName: true, lastName: true, displayName: true,
       avatarUrl: true, phone: true,
-      // city, country, language, dateOfBirth added after migration
+      city: true, country: true, language: true, dateOfBirth: true,
+      shippingName: true, shippingPhone: true, shippingLine1: true, shippingLine2: true,
+      shippingCity: true, shippingPostalCode: true, shippingCountry: true,
       lastActiveAt: true, createdAt: true,
     },
   });

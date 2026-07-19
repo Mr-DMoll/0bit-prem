@@ -25,6 +25,14 @@ import userRoutes         from "./modules/users/user.routes.js";
 import adminRoutes        from "./modules/admin/admin.routes.js";
 import superAdminRoutes   from "./modules/super-admin/super-admin.routes.js";
 import notificationRoutes from "./modules/notifications/notification.routes.js";
+import { adminMusicRouter, publicMusicRouter } from "./modules/music/music.routes.js";
+import { adminEventsRouter, publicEventsRouter } from "./modules/events/events.routes.js";
+import { adminGalleryRouter, publicGalleryRouter } from "./modules/gallery/gallery.routes.js";
+import { adminBookingsRouter, publicBookingsRouter } from "./modules/bookings/bookings.routes.js";
+import sessionsRoutes from "./modules/sessions/sessions.routes.js";
+import uploadsRoutes from "./modules/uploads/uploads.routes.js";
+import { adminContentRouter, publicContentRouter } from "./modules/content/content.routes.js";
+import { adminMerchRouter, publicMerchRouter, merchOrdersRouter } from "./modules/merch/merch.routes.js";
 
 const app: Express = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -78,6 +86,21 @@ app.use(`${API}/users`,         userRoutes);
 app.use(`${API}/admin`,         adminRoutes);
 app.use(`${API}/super-admin`,   superAdminRoutes);
 app.use(`${API}/notifications`, notificationRoutes);
+app.use(`${API}/admin/music`,   adminMusicRouter);
+app.use(`${API}/music`,         publicMusicRouter);
+app.use(`${API}/admin/events`,  adminEventsRouter);
+app.use(`${API}/events`,        publicEventsRouter);
+app.use(`${API}/admin/gallery`, adminGalleryRouter);
+app.use(`${API}/gallery`,       publicGalleryRouter);
+app.use(`${API}/admin/bookings`, adminBookingsRouter);
+app.use(`${API}/bookings`,      publicBookingsRouter);
+app.use(`${API}/sessions`,      sessionsRoutes);
+app.use(`${API}/admin/uploads`, uploadsRoutes);
+app.use(`${API}/admin/content`, adminContentRouter);
+app.use(`${API}/content`,       publicContentRouter);
+app.use(`${API}/admin/merch`,   adminMerchRouter);
+app.use(`${API}/merch`,         publicMerchRouter);
+app.use(`${API}/merch-orders`,  merchOrdersRouter);
 
 // ── 6. 404 ────────────────────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {
