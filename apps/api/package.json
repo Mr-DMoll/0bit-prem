@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --conditions=source src/server.ts",
+    "check-types": "tsc --noEmit",
     "build": "tsc",
     "start": "node dist/server.js"
   },
