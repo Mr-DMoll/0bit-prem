@@ -40,15 +40,18 @@ jobs:
       # wrong for something type-checking depends on for correctness (it once
       # let a Prisma client from before newer models existed pass silently).
       # Artifacts are scoped to this run only, so web/api are guaranteed to
-      # get exactly what this job just built.
+      # get exactly what this job just built. Tarring first sidesteps a
+      # upload-artifact quirk: given multiple paths, it collapses them to
+      # their *least common ancestor* instead of preserving full paths from
+      # the repo root, which silently relocated these to the wrong directory.
+      - name: Archive built packages
+        run: tar -czf built-packages.tar.gz packages/types/dist packages/database/dist packages/database/generated
+
       - name: Upload built packages
         uses: actions/upload-artifact@v4
         with:
           name: built-packages
-          path: |
-            packages/types/dist
-            packages/database/dist
-            packages/database/generated
+          path: built-packages.tar.gz
           retention-days: 1
 
   # ── Step 2a: Web (Next.js) — runs after packages ──────────────────────────
@@ -71,6 +74,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-packages
+
+      - name: Extract built packages
+        run: tar -xzf built-packages.tar.gz
 
       - name: Type check (web)
         run: pnpm --filter web check-types
@@ -98,6 +104,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: built-packages
+
+      - name: Extract built packages
+        run: tar -xzf built-packages.tar.gz
 
       - name: Type check (api)
         run: pnpm --filter @repo/api check-types
