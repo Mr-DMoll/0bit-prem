@@ -13,13 +13,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # opt into Node.js 24 now, removes deprecation warnings
 
 jobs:
-  # Each job builds its own @repo/types + @repo/database from scratch rather
-  # than sharing a cross-job cache — a stale cached Prisma client (generated
-  # before newer models existed) silently passed type-checking against the
-  # wrong shape. Only the pnpm store is cached (safe: it's just downloaded
-  # packages, never generated code), so `pnpm install` stays fast.
-  web:
-    name: Web — Type Check & Build
+  # ── Step 1: build shared workspace packages once ───────────────────────────
+  packages:
+    name: Build Workspace Packages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,16 +33,29 @@ jobs:
 
       - name: Generate Prisma + build @repo/database
         run: pnpm --filter @repo/database build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Type check (web)
-        run: pnpm --filter web check-types
+      # actions/cache is best-effort and can silently restore a stale entry —
+      # wrong for something type-checking depends on for correctness (it once
+      # let a Prisma client from before newer models existed pass silently).
+      # Artifacts are scoped to this run only, so web/api are guaranteed to
+      # get exactly what this job just built.
+      - name: Upload built packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-packages
+          path: |
+            packages/types/dist
+            packages/database/dist
+            packages/database/generated
+          retention-days: 1
 
-      - name: Build web
-        run: pnpm --filter web build
-
-  api:
-    name: API — Type Check & Build
+  # ── Step 2a: Web (Next.js) — runs after packages ──────────────────────────
+  web:
+    name: Web — Type Check & Build
     runs-on: ubuntu-latest
+    needs: packages
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -58,11 +67,37 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build @repo/types
-        run: pnpm --filter @repo/types build
+      - name: Download built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: built-packages
 
-      - name: Generate Prisma + build @repo/database
-        run: pnpm --filter @repo/database build
+      - name: Type check (web)
+        run: pnpm --filter web check-types
+
+      - name: Build web
+        run: pnpm --filter web build
+
+  # ── Step 2b: API (Node/Express) — runs after packages ─────────────────────
+  api:
+    name: API — Type Check & Build
+    runs-on: ubuntu-latest
+    needs: packages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: built-packages
 
       - name: Type check (api)
         run: pnpm --filter @repo/api check-types
