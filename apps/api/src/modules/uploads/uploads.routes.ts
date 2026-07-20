@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { presignUpload } from "./uploads.controller.js";
+import { presignUpload, uploadTrack, uploadTrackMiddleware } from "./uploads.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
 import { authorize } from "../../middleware/role.middleware.js";
 import { Role } from "@repo/types";
@@ -9,5 +9,6 @@ router.use(protect);
 router.use(authorize([Role.ADMIN, Role.SUPER_ADMIN]));
 
 router.post("/presign", presignUpload);
+router.post("/track", uploadTrackMiddleware, uploadTrack);
 
 export default router;

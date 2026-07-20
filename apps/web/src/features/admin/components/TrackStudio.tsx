@@ -178,7 +178,7 @@ export function TrackStudio({ albumId, tracks, onTracksChange }: {
     const results = await Promise.all(pending.map(async (entry) => {
       updateStaged(entry.key, { status: "uploading", progress: 0 });
       try {
-        const url = await uploadsService.uploadWithProgress(entry.file, "tracks", (pct) => updateStaged(entry.key, { progress: pct }));
+        const url = await uploadsService.uploadTrack(entry.file, (pct) => updateStaged(entry.key, { progress: pct }));
         updateStaged(entry.key, { status: "success", progress: 100 });
         return { entry, url, ok: true as const };
       } catch {

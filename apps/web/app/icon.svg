@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <circle cx="32" cy="32" r="25.6" fill="none" stroke="#f59e0b" stroke-width="0.768" opacity="0.6"/>
+  <circle cx="32" cy="32" r="17.92" fill="none" stroke="#f59e0b" stroke-width="0.448" opacity="0.35"/>
+  <line x1="57.6" y1="32" x2="53.76" y2="32" stroke="#f59e0b" stroke-width="0.896" opacity="0.75"/>
+  <line x1="56.728" y1="38.626" x2="54.749" y2="38.096" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="54.17" y1="44.8" x2="52.397" y2="43.776" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="50.102" y1="50.102" x2="48.654" y2="48.654" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="44.8" y1="54.17" x2="43.776" y2="52.397" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="38.626" y1="56.728" x2="38.096" y2="54.749" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="32" y1="57.6" x2="32" y2="53.76" stroke="#f59e0b" stroke-width="0.896" opacity="0.75"/>
+  <line x1="25.374" y1="56.728" x2="25.904" y2="54.749" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="19.2" y1="54.17" x2="20.224" y2="52.397" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="13.898" y1="50.102" x2="15.346" y2="48.654" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="9.83" y1="44.8" x2="11.603" y2="43.776" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="7.272" y1="38.626" x2="9.251" y2="38.096" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="6.4" y1="32" x2="10.24" y2="32" stroke="#f59e0b" stroke-width="0.896" opacity="0.75"/>
+  <line x1="7.272" y1="25.374" x2="9.251" y2="25.904" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="9.83" y1="19.2" x2="11.603" y2="20.224" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="13.898" y1="13.898" x2="15.346" y2="15.346" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="19.2" y1="9.83" x2="20.224" y2="11.603" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="25.374" y1="7.272" x2="25.904" y2="9.251" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="32" y1="6.4" x2="32" y2="10.24" stroke="#f59e0b" stroke-width="0.896" opacity="0.75"/>
+  <line x1="38.626" y1="7.272" x2="38.096" y2="9.251" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="44.8" y1="9.83" x2="43.776" y2="11.603" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="50.102" y1="13.898" x2="48.654" y2="15.346" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="54.17" y1="19.2" x2="52.397" y2="20.224" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <line x1="56.728" y1="25.374" x2="54.749" y2="25.904" stroke="#f59e0b" stroke-width="0.512" opacity="0.4"/>
+  <polygon points="60.16,29.888 61.568,32 60.16,34.112 58.752,32" fill="#f59e0b" opacity="0.5"/>
+  <polygon points="32,58.048 33.408,60.16 32,62.272 30.592,60.16" fill="#f59e0b" opacity="0.5"/>
+  <polygon points="3.84,29.888 5.248,32 3.84,34.112 2.432,32" fill="#f59e0b" opacity="0.5"/>
+  <polygon points="32,1.728 33.408,3.84 32,5.952 30.592,3.84" fill="#f59e0b" opacity="0.5"/>
+  <text x="32" y="32" text-anchor="middle" dominant-baseline="central" font-size="21.76" font-weight="700" font-family="Georgia, 'Times New Roman', serif" fill="#f59e0b">P</text>
+</svg>

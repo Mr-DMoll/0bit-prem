@@ -104,6 +104,7 @@ export const endpoints = {
   // Uploads (admin file uploads to R2)
   adminUploads: {
     presign: "/admin/uploads/presign",
+    track:   "/admin/uploads/track",
   },
 
   // Content (About/Contact/Harinam text, admin + public)

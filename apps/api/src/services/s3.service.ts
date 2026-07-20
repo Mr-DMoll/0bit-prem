@@ -11,6 +11,10 @@ const s3 = new S3Client({
   },
 });
 
+// Uploaded objects are content-addressed (random key prefix per upload), so a
+// given key's bytes never change — safe to cache aggressively at the edge/browser.
+export const R2_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
 export async function getPresignedUploadUrl(
   key: string,
   contentType: string,
@@ -19,10 +23,27 @@ export async function getPresignedUploadUrl(
     Bucket: env.R2_BUCKET_NAME,
     Key: key,
     ContentType: contentType,
+    CacheControl: R2_CACHE_CONTROL,
   });
 
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
   const publicUrl = `${env.R2_PUBLIC_URL}/${key}`;
 
   return { uploadUrl, publicUrl };
+}
+
+export async function uploadObject(
+  key: string,
+  body: Buffer,
+  contentType: string,
+): Promise<string> {
+  await s3.send(new PutObjectCommand({
+    Bucket: env.R2_BUCKET_NAME,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    CacheControl: R2_CACHE_CONTROL,
+  }));
+
+  return `${env.R2_PUBLIC_URL}/${key}`;
 }
