@@ -86,6 +86,17 @@ Phase 2 / worth naming now, not launch-blocking:
 - [x] Public About page reads real content
 - [x] Public Contact page shows real email/phone/socials alongside the booking form
 
+## Content page (About/Harinam/Sanctum/Contact) — audit findings (2026-07-21)
+
+- [ ] **"Save changes" saves all six fields, not just the active tab** — `handleSave` PATCHes every key (`about_bio`, `harinam_intro`, `sanctum_quote`, `contact_email`, `contact_phone`, `contact_socials`) regardless of which tab is open or what actually changed. Real clobber risk: editing "About" in one session can silently overwrite "Contact" back to a stale in-memory value if it was changed elsewhere since this page loaded. Should only save what actually changed.
+- [ ] **No unsaved-changes warning** — navigate away after editing without hitting Save and the edit is just gone, no prompt.
+- [ ] **No per-tab dirty indicator** — one global "Saved" checkmark; no way to see at a glance which tab has pending edits.
+- [ ] **No "last saved" timestamp or version history** — `SystemSetting.updatedAt` already exists per key in the schema, just isn't surfaced. No undo if a save overwrites something by mistake.
+- [ ] **Social links are free text, not structured — and render as literal text on the public Contact page, not clickable links.** The socials field is one textarea (e.g. "Instagram: @premvkay, YouTube: /premvkay"); a visitor can't tap through, they'd have to copy the handle and search for it themselves. Should be structured per-platform fields (Instagram/YouTube/Facebook/etc., each a real URL) rendered as actual icon links. Single most "unprofessional-looking" gap on the page since it's the content fans are most likely to act on.
+- [ ] **Markdown editor has no image insertion** — toolbar has Bold/Italic/Heading/Bullet/Numbered/Quote/Link but no "insert image," even though the public renderer (`marked`) already supports markdown image syntax and would render one correctly. Bios/Harinam intro would genuinely benefit from a photo; not realistic to expect hand-typed markdown image syntax with a pre-hosted URL from a non-technical owner.
+- [ ] **No "view live" link** — no quick way to jump to the actual public page after editing to see the change in context.
+- [ ] Sanctum tab is currently just a single quote field — design this together with the "feature an album on Sanctum" item already tracked above (both are "what does the owner control about the homepage"), not as two separate efforts.
+
 ## Harinam — done
 
 - [x] Decision: reuses the `Event` model, plus one new `category` field (`GENERAL`/`HARINAM`)
