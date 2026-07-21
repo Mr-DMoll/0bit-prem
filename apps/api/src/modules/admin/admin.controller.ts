@@ -59,7 +59,7 @@ export const adminDashboard = catchAsync(async (_req: Request, res: Response) =>
       where:   { status: "NEW" },
       orderBy: { createdAt: "desc" },
       take:    8,
-      select:  { id: true, name: true, eventDetails: true, createdAt: true },
+      select:  { id: true, name: true, eventType: true, eventDate: true, venue: true, eventDetails: true, createdAt: true },
     }),
   ]);
 
@@ -78,14 +78,21 @@ export const adminDashboard = catchAsync(async (_req: Request, res: Response) =>
       createdAt: o.createdAt,
       href: "/admin/merch?tab=orders",
     })),
-    ...attentionBookings.map((b) => ({
-      type: "booking" as const,
-      id: b.id,
-      label: `Booking inquiry from ${b.name}`,
-      subLabel: b.eventDetails,
-      createdAt: b.createdAt,
-      href: "/admin/bookings",
-    })),
+    ...attentionBookings.map((b) => {
+      const parts = [
+        b.eventType,
+        b.eventDate ? b.eventDate.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) : null,
+        b.venue,
+      ].filter(Boolean);
+      return {
+        type: "booking" as const,
+        id: b.id,
+        label: `Booking inquiry from ${b.name}`,
+        subLabel: parts.length > 0 ? parts.join(", ") : (b.eventDetails ?? "New inquiry"),
+        createdAt: b.createdAt,
+        href: "/admin/bookings",
+      };
+    }),
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 8);
 
   return res.status(HttpStatus.OK).json({

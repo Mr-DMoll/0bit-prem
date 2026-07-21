@@ -78,8 +78,13 @@ export const endpoints = {
 
   // Gallery (admin + public)
   adminGallery: {
-    list: "/admin/gallery",
-    byId: (id: string) => `/admin/gallery/${id}`,
+    list:      "/admin/gallery",
+    byId:      (id: string) => `/admin/gallery/${id}`,
+    bulk:      "/admin/gallery/bulk",
+    reorder:   "/admin/gallery/reorder",
+    bulkMove:  "/admin/gallery/bulk-move",
+    albums:    "/admin/gallery/albums",
+    albumById: (id: string) => `/admin/gallery/albums/${id}`,
   },
   gallery: {
     list: "/gallery",
@@ -87,11 +92,16 @@ export const endpoints = {
 
   // Bookings (admin + public)
   adminBookings: {
-    list:         "/admin/bookings",
-    updateStatus: (id: string) => `/admin/bookings/${id}/status`,
+    list:          "/admin/bookings",
+    updateStatus:  (id: string) => `/admin/bookings/${id}/status`,
+    updateNotes:   (id: string) => `/admin/bookings/${id}/notes`,
+    reply:         (id: string) => `/admin/bookings/${id}/reply`,
+    eventTypes:    "/admin/bookings/event-types",
+    eventTypeById: (id: string) => `/admin/bookings/event-types/${id}`,
   },
   bookings: {
-    submit: "/bookings",
+    submit:     "/bookings",
+    eventTypes: "/bookings/event-types",
   },
 
   // Sessions (single-device playback enforcement)
@@ -108,7 +118,8 @@ export const endpoints = {
 
   // Content (About/Contact/Harinam text, admin + public)
   adminContent: {
-    get: "/admin/content",
+    get:    "/admin/content",
+    revert: (key: string) => `/admin/content/${key}/revert`,
   },
   content: {
     get: "/content",

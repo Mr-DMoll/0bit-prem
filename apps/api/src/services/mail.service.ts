@@ -13,24 +13,58 @@ async function send(payload: Parameters<typeof resend.emails.send>[0]) {
   console.log(`✅ [MAIL] Sent to ${Array.isArray(payload.to) ? payload.to.join(", ") : payload.to} (id: ${data?.id})`);
 }
 
-// ── Invite email ───────────────────────────────────────────────────────────────
-// Purely a courtesy notification — there's no token/expiry, the account is
-// already live. Whoever it's addressed to can sign in with Google whenever
-// they like, whether they've seen this email or not.
+// ── Shared branded shell ────────────────────────────────────────────────────────
+// Every transactional email wraps its content in this: a bordered card (not a
+// dark background block, not a nested-table layout), an accent-colored eyebrow
+// + heading, and a divider under the header. This is the "signature branding"
+// look, applied consistently everywhere instead of ad-hoc colored text.
 //
-// Kept deliberately plain: a single div, one muted-color text link (not a
-// boxed button), no background color blocks, no bordered callout box. The
-// earlier version (nested tables, dark header band, gold button, bordered
-// notice box) landed in spam — that kind of layout pattern-matches marketing/
-// phishing templates far more than a plain email does, on top of which this
-// sending domain has limited volume/reputation with Gmail so far. This is
-// intentionally closer to the original template that was known to land in
-// the inbox.
+// Deliberately still avoids the specific patterns that landed an earlier
+// version in spam: no dark background color blocks, no boxed CTA buttons, no
+// nested `<table>` layouts, no bordered "notice"/alert callout boxes. A single
+// light-bordered card with real typographic hierarchy reads as a normal
+// transactional receipt (the same visual language Stripe/Linear-style emails
+// use), not a marketing template — that combination is what previously
+// pattern-matched as spam, not a border by itself.
 
 const ACCENT    = "#b45309";
 const BODY_TEXT = "#1f2937";
 const MUTED     = "#6b7280";
+const BORDER    = "#e5e7eb";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+function emailShell(title: string, bodyHtml: string): string {
+  return `
+    <div style="font-family:${SANS};max-width:520px;margin:0 auto;padding:24px;">
+      <div style="border:1px solid ${BORDER};border-radius:14px;padding:32px;">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${ACCENT};">
+          ${APP}
+        </p>
+        <h1 style="margin:0 0 20px;padding-bottom:20px;border-bottom:1px solid ${BORDER};font-size:19px;font-weight:700;color:${BODY_TEXT};">
+          ${title}
+        </h1>
+        ${bodyHtml}
+      </div>
+    </div>
+  `;
+}
+
+// A stacked label/value pair — the same visual pattern used throughout the
+// admin dashboard (uppercase muted label above a larger dark value) rather
+// than inline "Label: value" text.
+function fieldRow(label: string, value: string): string {
+  return `
+    <div style="margin:0 0 16px;">
+      <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${MUTED};">${label}</p>
+      <p style="margin:3px 0 0;font-size:15px;color:${BODY_TEXT};line-height:1.5;">${value}</p>
+    </div>
+  `;
+}
+
+// ── Invite email ───────────────────────────────────────────────────────────────
+// Purely a courtesy notification — there's no token/expiry, the account is
+// already live. Whoever it's addressed to can sign in with Google whenever
+// they like, whether they've seen this email or not.
 
 const ROLE_ARTICLE: Record<string, string> = {
   Customer: "a customer",
@@ -48,23 +82,17 @@ export async function sendInviteEmail(
     from:    FROM,
     to,
     subject: `You've been added to ${APP}`,
-    html: `
-      <div style="font-family:${SANS};max-width:480px;margin:0 auto;padding:32px;color:${BODY_TEXT};">
-        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${ACCENT};">
-          ${APP}
-        </p>
-        <h1 style="margin:0 0 18px;font-size:19px;font-weight:700;">You're in</h1>
-        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-          Hi ${name}, you've been added to ${APP} as ${roleText}.
-        </p>
-        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-          <a href="${signInUrl}" style="color:${ACCENT};font-weight:700;text-decoration:none;">Sign in to ${APP} →</a>
-        </p>
-        <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">
-          Sign in anytime with Google — no password needed.
-        </p>
-      </div>
-    `,
+    html: emailShell("You're in", `
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${BODY_TEXT};">
+        Hi ${name}, you've been added to ${APP} as ${roleText}.
+      </p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+        <a href="${signInUrl}" style="color:${ACCENT};font-weight:700;text-decoration:none;">Sign in to ${APP} →</a>
+      </p>
+      <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">
+        Sign in anytime with Google — no password needed.
+      </p>
+    `),
   });
 }
 
@@ -98,39 +126,81 @@ export async function sendPasswordResetEmail(
     from:    FROM,
     to,
     subject: `Reset your ${APP} password`,
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-        <h2>Reset your password</h2>
-        <p>Click the button below to reset your password. This link expires in 1 hour.</p>
-        <a href="${resetLink}" style="display:inline-block;padding:12px 24px;background:#84cc16;color:#0f172a;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">
-          Reset Password
-        </a>
-        <p style="color:#666;font-size:13px">If you didn't request this, ignore this email.</p>
-      </div>
-    `,
+    html: emailShell("Reset your password", `
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${BODY_TEXT};">
+        Click the link below to reset your password. This link expires in 1 hour.
+      </p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+        <a href="${resetLink}" style="color:${ACCENT};font-weight:700;text-decoration:none;">Reset password →</a>
+      </p>
+      <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    `),
   });
 }
 
 // ── Booking inquiry notification (to staff) ────────────────────────────────────
 
 export async function sendBookingNotificationEmail(
-  to: string[], inquiry: { name: string; email: string; phone?: string | null; eventDetails: string; message?: string | null }
+  to: string[], inquiry: {
+    name: string; email: string; phone?: string | null;
+    eventType?: string | null; eventDate?: string | null; venue?: string | null;
+    eventDetails?: string | null; message?: string | null;
+  }
 ) {
   if (to.length === 0) return;
+
+  const rows = [
+    fieldRow("Name", inquiry.name),
+    fieldRow("Email", `<a href="mailto:${inquiry.email}" style="color:${ACCENT};text-decoration:none;">${inquiry.email}</a>`),
+    inquiry.phone ? fieldRow("Phone", inquiry.phone) : "",
+    inquiry.eventType ? fieldRow("Event type", inquiry.eventType) : "",
+    inquiry.eventDate ? fieldRow("Date", inquiry.eventDate) : "",
+    inquiry.venue ? fieldRow("Venue", inquiry.venue) : "",
+    inquiry.eventDetails ? fieldRow("Additional details", inquiry.eventDetails.replace(/\n/g, "<br/>")) : "",
+    inquiry.message ? fieldRow("Message", inquiry.message.replace(/\n/g, "<br/>")) : "",
+  ].join("");
+
   await send({
     from:    FROM,
     to,
     subject: `New booking inquiry from ${inquiry.name}`,
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-        <h2>New booking inquiry</h2>
-        <p><strong>Name:</strong> ${inquiry.name}</p>
-        <p><strong>Email:</strong> ${inquiry.email}</p>
-        ${inquiry.phone ? `<p><strong>Phone:</strong> ${inquiry.phone}</p>` : ""}
-        <p><strong>Event details:</strong><br/>${inquiry.eventDetails}</p>
-        ${inquiry.message ? `<p><strong>Message:</strong><br/>${inquiry.message}</p>` : ""}
-      </div>
-    `,
+    html: emailShell("New booking inquiry", rows),
+  });
+}
+
+// ── Booking auto-acknowledgment (to the inquirer) ──────────────────────────────
+// Purely a "we got it" courtesy — no action required.
+
+export async function sendBookingAcknowledgmentEmail(to: string, name: string) {
+  await send({
+    from:    FROM,
+    to,
+    subject: `We got your booking inquiry — ${APP}`,
+    html: emailShell(`Thanks, ${name.split(" ")[0]}`, `
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${BODY_TEXT};">
+        We've received your booking inquiry and will get back to you within 48 hours.
+      </p>
+      <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">
+        No need to reply to this email — we'll follow up directly.
+      </p>
+    `),
+  });
+}
+
+// ── Booking reply (staff → inquirer) ───────────────────────────────────────────
+
+export async function sendBookingReplyEmail(to: string, name: string, message: string) {
+  await send({
+    from:    FROM,
+    to,
+    subject: `Re: your booking inquiry — ${APP}`,
+    html: emailShell("Reply to your inquiry", `
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${BODY_TEXT};">Hi ${name.split(" ")[0]},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:${BODY_TEXT};white-space:pre-wrap;">${message}</p>
+      <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">— ${APP}</p>
+    `),
   });
 }
 
