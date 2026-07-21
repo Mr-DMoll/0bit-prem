@@ -59,6 +59,22 @@ Open decisions (not broken, but worth an explicit yes/no before launch):
 - [ ] Shipping cost — currently no separate line item; total is just sum of item prices. Confirm this is intentional (built into pricing) vs. needing its own field.
 - [ ] Discount/promo codes, product reviews, catalog search/sort — all currently absent; likely fine until the catalog grows past a page or two, but flagging so it's a deliberate call, not an oversight.
 
+## Admin — professional tooling (sidebar/analytics audit, 2026-07-21)
+
+Current admin sidebar is entirely operational (CRUD on every entity) with nothing analytical — no way to see "how is the business doing," which matters given this is ecommerce + a Spotify-for-Artists-style streaming product, not just a content manager.
+
+- [ ] **Analytics page (flagship addition)** — combine sales reporting (revenue over time, top-selling products/variants, average order value, revenue split music vs. merch, order-status breakdown — all derivable from existing `Order`/`OrderItem`/`PaymentTransaction` data) with listening analytics (play counts per track/album, most-played tracks, plays over time, and specifically which free tracks convert listeners into buyers). The listening half needs a new `AlbumPlay`/`TrackPlay` log or counter column — no play-count tracking exists in the schema today.
+- [ ] **Low-stock visibility** — badge/filter on the existing Merch → Products table using the `stock` field that's already there; no new page needed.
+- [ ] **Customer detail view** — clicking into a customer on the Customers page should show order history + lifetime spend, not just profile fields.
+- [ ] **Packing slip / order export** — printable packing slip per order (name, address, items, order #) and a CSV export of pending orders, for physical shipping.
+- [ ] **Feature an album on Sanctum** — admin toggle to control what Sanctum's "Up Next" surfaces, instead of a pure random pick; ties merch drops to the album promoting them.
+
+Phase 2 / worth naming now, not launch-blocking:
+- [ ] Payments/reconciliation view (settlement status, failed payments, refunds) — makes sense once PayFast is actually live, premature before.
+- [ ] Discount/promo codes — no schema support today; revisit as the catalog grows.
+- [ ] Fan broadcast email ("notify buyers about a new drop") — natural fit for a direct-to-fan platform, but a real feature, not a config toggle.
+- [ ] Manager's sidebar is thin (Overview + Orders only) — revisit once Analytics exists, scoped down from the full admin view.
+
 ## Account page — done
 
 - [x] API: "my purchased albums" + "my orders" endpoints
