@@ -64,6 +64,9 @@ export const ModelName = {
   OrderItem: 'OrderItem',
   PaymentTransaction: 'PaymentTransaction',
   BookingInquiry: 'BookingInquiry',
+  BookingEventTypeOption: 'BookingEventTypeOption',
+  BookingReply: 'BookingReply',
+  GalleryAlbum: 'GalleryAlbum',
   GalleryImage: 'GalleryImage',
   Event: 'Event'
 } as const
@@ -152,6 +155,7 @@ export const SystemSettingScalarFieldEnum = {
   id: 'id',
   key: 'key',
   value: 'value',
+  previousValue: 'previousValue',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -287,6 +291,10 @@ export const BookingInquiryScalarFieldEnum = {
   eventDetails: 'eventDetails',
   message: 'message',
   status: 'status',
+  eventType: 'eventType',
+  eventDate: 'eventDate',
+  venue: 'venue',
+  internalNotes: 'internalNotes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -294,11 +302,46 @@ export const BookingInquiryScalarFieldEnum = {
 export type BookingInquiryScalarFieldEnum = (typeof BookingInquiryScalarFieldEnum)[keyof typeof BookingInquiryScalarFieldEnum]
 
 
+export const BookingEventTypeOptionScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  isEnabled: 'isEnabled',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BookingEventTypeOptionScalarFieldEnum = (typeof BookingEventTypeOptionScalarFieldEnum)[keyof typeof BookingEventTypeOptionScalarFieldEnum]
+
+
+export const BookingReplyScalarFieldEnum = {
+  id: 'id',
+  bookingInquiryId: 'bookingInquiryId',
+  message: 'message',
+  sentByEmail: 'sentByEmail',
+  createdAt: 'createdAt'
+} as const
+
+export type BookingReplyScalarFieldEnum = (typeof BookingReplyScalarFieldEnum)[keyof typeof BookingReplyScalarFieldEnum]
+
+
+export const GalleryAlbumScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GalleryAlbumScalarFieldEnum = (typeof GalleryAlbumScalarFieldEnum)[keyof typeof GalleryAlbumScalarFieldEnum]
+
+
 export const GalleryImageScalarFieldEnum = {
   id: 'id',
   url: 'url',
   caption: 'caption',
   order: 'order',
+  albumId: 'albumId',
   createdAt: 'createdAt'
 } as const
 

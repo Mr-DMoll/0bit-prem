@@ -39,6 +39,7 @@ export type GalleryImageMinAggregateOutputType = {
   url: string | null
   caption: string | null
   order: number | null
+  albumId: string | null
   createdAt: Date | null
 }
 
@@ -47,6 +48,7 @@ export type GalleryImageMaxAggregateOutputType = {
   url: string | null
   caption: string | null
   order: number | null
+  albumId: string | null
   createdAt: Date | null
 }
 
@@ -55,6 +57,7 @@ export type GalleryImageCountAggregateOutputType = {
   url: number
   caption: number
   order: number
+  albumId: number
   createdAt: number
   _all: number
 }
@@ -73,6 +76,7 @@ export type GalleryImageMinAggregateInputType = {
   url?: true
   caption?: true
   order?: true
+  albumId?: true
   createdAt?: true
 }
 
@@ -81,6 +85,7 @@ export type GalleryImageMaxAggregateInputType = {
   url?: true
   caption?: true
   order?: true
+  albumId?: true
   createdAt?: true
 }
 
@@ -89,6 +94,7 @@ export type GalleryImageCountAggregateInputType = {
   url?: true
   caption?: true
   order?: true
+  albumId?: true
   createdAt?: true
   _all?: true
 }
@@ -184,6 +190,7 @@ export type GalleryImageGroupByOutputType = {
   url: string
   caption: string | null
   order: number
+  albumId: string | null
   createdAt: Date
   _count: GalleryImageCountAggregateOutputType | null
   _avg: GalleryImageAvgAggregateOutputType | null
@@ -215,7 +222,9 @@ export type GalleryImageWhereInput = {
   url?: Prisma.StringFilter<"GalleryImage"> | string
   caption?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
   order?: Prisma.IntFilter<"GalleryImage"> | number
+  albumId?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"GalleryImage"> | Date | string
+  album?: Prisma.XOR<Prisma.GalleryAlbumNullableScalarRelationFilter, Prisma.GalleryAlbumWhereInput> | null
 }
 
 export type GalleryImageOrderByWithRelationInput = {
@@ -223,7 +232,9 @@ export type GalleryImageOrderByWithRelationInput = {
   url?: Prisma.SortOrder
   caption?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  albumId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  album?: Prisma.GalleryAlbumOrderByWithRelationInput
 }
 
 export type GalleryImageWhereUniqueInput = Prisma.AtLeast<{
@@ -234,7 +245,9 @@ export type GalleryImageWhereUniqueInput = Prisma.AtLeast<{
   url?: Prisma.StringFilter<"GalleryImage"> | string
   caption?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
   order?: Prisma.IntFilter<"GalleryImage"> | number
+  albumId?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
   createdAt?: Prisma.DateTimeFilter<"GalleryImage"> | Date | string
+  album?: Prisma.XOR<Prisma.GalleryAlbumNullableScalarRelationFilter, Prisma.GalleryAlbumWhereInput> | null
 }, "id">
 
 export type GalleryImageOrderByWithAggregationInput = {
@@ -242,6 +255,7 @@ export type GalleryImageOrderByWithAggregationInput = {
   url?: Prisma.SortOrder
   caption?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
+  albumId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.GalleryImageCountOrderByAggregateInput
   _avg?: Prisma.GalleryImageAvgOrderByAggregateInput
@@ -258,6 +272,7 @@ export type GalleryImageScalarWhereWithAggregatesInput = {
   url?: Prisma.StringWithAggregatesFilter<"GalleryImage"> | string
   caption?: Prisma.StringNullableWithAggregatesFilter<"GalleryImage"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"GalleryImage"> | number
+  albumId?: Prisma.StringNullableWithAggregatesFilter<"GalleryImage"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GalleryImage"> | Date | string
 }
 
@@ -267,6 +282,7 @@ export type GalleryImageCreateInput = {
   caption?: string | null
   order?: number
   createdAt?: Date | string
+  album?: Prisma.GalleryAlbumCreateNestedOneWithoutImagesInput
 }
 
 export type GalleryImageUncheckedCreateInput = {
@@ -274,6 +290,7 @@ export type GalleryImageUncheckedCreateInput = {
   url: string
   caption?: string | null
   order?: number
+  albumId?: string | null
   createdAt?: Date | string
 }
 
@@ -283,6 +300,7 @@ export type GalleryImageUpdateInput = {
   caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  album?: Prisma.GalleryAlbumUpdateOneWithoutImagesNestedInput
 }
 
 export type GalleryImageUncheckedUpdateInput = {
@@ -290,6 +308,7 @@ export type GalleryImageUncheckedUpdateInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  albumId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -298,6 +317,7 @@ export type GalleryImageCreateManyInput = {
   url: string
   caption?: string | null
   order?: number
+  albumId?: string | null
   createdAt?: Date | string
 }
 
@@ -314,7 +334,18 @@ export type GalleryImageUncheckedUpdateManyInput = {
   url?: Prisma.StringFieldUpdateOperationsInput | string
   caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  albumId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GalleryImageListRelationFilter = {
+  every?: Prisma.GalleryImageWhereInput
+  some?: Prisma.GalleryImageWhereInput
+  none?: Prisma.GalleryImageWhereInput
+}
+
+export type GalleryImageOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type GalleryImageCountOrderByAggregateInput = {
@@ -322,6 +353,7 @@ export type GalleryImageCountOrderByAggregateInput = {
   url?: Prisma.SortOrder
   caption?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  albumId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -334,6 +366,7 @@ export type GalleryImageMaxOrderByAggregateInput = {
   url?: Prisma.SortOrder
   caption?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  albumId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -342,11 +375,140 @@ export type GalleryImageMinOrderByAggregateInput = {
   url?: Prisma.SortOrder
   caption?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  albumId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type GalleryImageSumOrderByAggregateInput = {
   order?: Prisma.SortOrder
+}
+
+export type GalleryImageCreateNestedManyWithoutAlbumInput = {
+  create?: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput> | Prisma.GalleryImageCreateWithoutAlbumInput[] | Prisma.GalleryImageUncheckedCreateWithoutAlbumInput[]
+  connectOrCreate?: Prisma.GalleryImageCreateOrConnectWithoutAlbumInput | Prisma.GalleryImageCreateOrConnectWithoutAlbumInput[]
+  createMany?: Prisma.GalleryImageCreateManyAlbumInputEnvelope
+  connect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+}
+
+export type GalleryImageUncheckedCreateNestedManyWithoutAlbumInput = {
+  create?: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput> | Prisma.GalleryImageCreateWithoutAlbumInput[] | Prisma.GalleryImageUncheckedCreateWithoutAlbumInput[]
+  connectOrCreate?: Prisma.GalleryImageCreateOrConnectWithoutAlbumInput | Prisma.GalleryImageCreateOrConnectWithoutAlbumInput[]
+  createMany?: Prisma.GalleryImageCreateManyAlbumInputEnvelope
+  connect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+}
+
+export type GalleryImageUpdateManyWithoutAlbumNestedInput = {
+  create?: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput> | Prisma.GalleryImageCreateWithoutAlbumInput[] | Prisma.GalleryImageUncheckedCreateWithoutAlbumInput[]
+  connectOrCreate?: Prisma.GalleryImageCreateOrConnectWithoutAlbumInput | Prisma.GalleryImageCreateOrConnectWithoutAlbumInput[]
+  upsert?: Prisma.GalleryImageUpsertWithWhereUniqueWithoutAlbumInput | Prisma.GalleryImageUpsertWithWhereUniqueWithoutAlbumInput[]
+  createMany?: Prisma.GalleryImageCreateManyAlbumInputEnvelope
+  set?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  disconnect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  delete?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  connect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  update?: Prisma.GalleryImageUpdateWithWhereUniqueWithoutAlbumInput | Prisma.GalleryImageUpdateWithWhereUniqueWithoutAlbumInput[]
+  updateMany?: Prisma.GalleryImageUpdateManyWithWhereWithoutAlbumInput | Prisma.GalleryImageUpdateManyWithWhereWithoutAlbumInput[]
+  deleteMany?: Prisma.GalleryImageScalarWhereInput | Prisma.GalleryImageScalarWhereInput[]
+}
+
+export type GalleryImageUncheckedUpdateManyWithoutAlbumNestedInput = {
+  create?: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput> | Prisma.GalleryImageCreateWithoutAlbumInput[] | Prisma.GalleryImageUncheckedCreateWithoutAlbumInput[]
+  connectOrCreate?: Prisma.GalleryImageCreateOrConnectWithoutAlbumInput | Prisma.GalleryImageCreateOrConnectWithoutAlbumInput[]
+  upsert?: Prisma.GalleryImageUpsertWithWhereUniqueWithoutAlbumInput | Prisma.GalleryImageUpsertWithWhereUniqueWithoutAlbumInput[]
+  createMany?: Prisma.GalleryImageCreateManyAlbumInputEnvelope
+  set?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  disconnect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  delete?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  connect?: Prisma.GalleryImageWhereUniqueInput | Prisma.GalleryImageWhereUniqueInput[]
+  update?: Prisma.GalleryImageUpdateWithWhereUniqueWithoutAlbumInput | Prisma.GalleryImageUpdateWithWhereUniqueWithoutAlbumInput[]
+  updateMany?: Prisma.GalleryImageUpdateManyWithWhereWithoutAlbumInput | Prisma.GalleryImageUpdateManyWithWhereWithoutAlbumInput[]
+  deleteMany?: Prisma.GalleryImageScalarWhereInput | Prisma.GalleryImageScalarWhereInput[]
+}
+
+export type GalleryImageCreateWithoutAlbumInput = {
+  id?: string
+  url: string
+  caption?: string | null
+  order?: number
+  createdAt?: Date | string
+}
+
+export type GalleryImageUncheckedCreateWithoutAlbumInput = {
+  id?: string
+  url: string
+  caption?: string | null
+  order?: number
+  createdAt?: Date | string
+}
+
+export type GalleryImageCreateOrConnectWithoutAlbumInput = {
+  where: Prisma.GalleryImageWhereUniqueInput
+  create: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput>
+}
+
+export type GalleryImageCreateManyAlbumInputEnvelope = {
+  data: Prisma.GalleryImageCreateManyAlbumInput | Prisma.GalleryImageCreateManyAlbumInput[]
+  skipDuplicates?: boolean
+}
+
+export type GalleryImageUpsertWithWhereUniqueWithoutAlbumInput = {
+  where: Prisma.GalleryImageWhereUniqueInput
+  update: Prisma.XOR<Prisma.GalleryImageUpdateWithoutAlbumInput, Prisma.GalleryImageUncheckedUpdateWithoutAlbumInput>
+  create: Prisma.XOR<Prisma.GalleryImageCreateWithoutAlbumInput, Prisma.GalleryImageUncheckedCreateWithoutAlbumInput>
+}
+
+export type GalleryImageUpdateWithWhereUniqueWithoutAlbumInput = {
+  where: Prisma.GalleryImageWhereUniqueInput
+  data: Prisma.XOR<Prisma.GalleryImageUpdateWithoutAlbumInput, Prisma.GalleryImageUncheckedUpdateWithoutAlbumInput>
+}
+
+export type GalleryImageUpdateManyWithWhereWithoutAlbumInput = {
+  where: Prisma.GalleryImageScalarWhereInput
+  data: Prisma.XOR<Prisma.GalleryImageUpdateManyMutationInput, Prisma.GalleryImageUncheckedUpdateManyWithoutAlbumInput>
+}
+
+export type GalleryImageScalarWhereInput = {
+  AND?: Prisma.GalleryImageScalarWhereInput | Prisma.GalleryImageScalarWhereInput[]
+  OR?: Prisma.GalleryImageScalarWhereInput[]
+  NOT?: Prisma.GalleryImageScalarWhereInput | Prisma.GalleryImageScalarWhereInput[]
+  id?: Prisma.StringFilter<"GalleryImage"> | string
+  url?: Prisma.StringFilter<"GalleryImage"> | string
+  caption?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
+  order?: Prisma.IntFilter<"GalleryImage"> | number
+  albumId?: Prisma.StringNullableFilter<"GalleryImage"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"GalleryImage"> | Date | string
+}
+
+export type GalleryImageCreateManyAlbumInput = {
+  id?: string
+  url: string
+  caption?: string | null
+  order?: number
+  createdAt?: Date | string
+}
+
+export type GalleryImageUpdateWithoutAlbumInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GalleryImageUncheckedUpdateWithoutAlbumInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GalleryImageUncheckedUpdateManyWithoutAlbumInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  caption?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -356,7 +518,9 @@ export type GalleryImageSelect<ExtArgs extends runtime.Types.Extensions.Internal
   url?: boolean
   caption?: boolean
   order?: boolean
+  albumId?: boolean
   createdAt?: boolean
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
 }, ExtArgs["result"]["galleryImage"]>
 
 export type GalleryImageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -364,7 +528,9 @@ export type GalleryImageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   url?: boolean
   caption?: boolean
   order?: boolean
+  albumId?: boolean
   createdAt?: boolean
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
 }, ExtArgs["result"]["galleryImage"]>
 
 export type GalleryImageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -372,7 +538,9 @@ export type GalleryImageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   url?: boolean
   caption?: boolean
   order?: boolean
+  albumId?: boolean
   createdAt?: boolean
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
 }, ExtArgs["result"]["galleryImage"]>
 
 export type GalleryImageSelectScalar = {
@@ -380,19 +548,32 @@ export type GalleryImageSelectScalar = {
   url?: boolean
   caption?: boolean
   order?: boolean
+  albumId?: boolean
   createdAt?: boolean
 }
 
-export type GalleryImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "url" | "caption" | "order" | "createdAt", ExtArgs["result"]["galleryImage"]>
+export type GalleryImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "url" | "caption" | "order" | "albumId" | "createdAt", ExtArgs["result"]["galleryImage"]>
+export type GalleryImageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
+}
+export type GalleryImageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
+}
+export type GalleryImageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  album?: boolean | Prisma.GalleryImage$albumArgs<ExtArgs>
+}
 
 export type $GalleryImagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GalleryImage"
-  objects: {}
+  objects: {
+    album: Prisma.$GalleryAlbumPayload<ExtArgs> | null
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     url: string
     caption: string | null
     order: number
+    albumId: string | null
     createdAt: Date
   }, ExtArgs["result"]["galleryImage"]>
   composites: {}
@@ -788,6 +969,7 @@ readonly fields: GalleryImageFieldRefs;
  */
 export interface Prisma__GalleryImageClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  album<T extends Prisma.GalleryImage$albumArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GalleryImage$albumArgs<ExtArgs>>): Prisma.Prisma__GalleryAlbumClient<runtime.Types.Result.GetResult<Prisma.$GalleryAlbumPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -821,6 +1003,7 @@ export interface GalleryImageFieldRefs {
   readonly url: Prisma.FieldRef<"GalleryImage", 'String'>
   readonly caption: Prisma.FieldRef<"GalleryImage", 'String'>
   readonly order: Prisma.FieldRef<"GalleryImage", 'Int'>
+  readonly albumId: Prisma.FieldRef<"GalleryImage", 'String'>
   readonly createdAt: Prisma.FieldRef<"GalleryImage", 'DateTime'>
 }
     
@@ -838,6 +1021,10 @@ export type GalleryImageFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
   /**
    * Filter, which GalleryImage to fetch.
    */
@@ -857,6 +1044,10 @@ export type GalleryImageFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Exte
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
+  /**
    * Filter, which GalleryImage to fetch.
    */
   where: Prisma.GalleryImageWhereUniqueInput
@@ -874,6 +1065,10 @@ export type GalleryImageFindFirstArgs<ExtArgs extends runtime.Types.Extensions.I
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
   /**
    * Filter, which GalleryImage to fetch.
    */
@@ -923,6 +1118,10 @@ export type GalleryImageFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Exten
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
+  /**
    * Filter, which GalleryImage to fetch.
    */
   where?: Prisma.GalleryImageWhereInput
@@ -970,6 +1169,10 @@ export type GalleryImageFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
   /**
    * Filter, which GalleryImages to fetch.
    */
@@ -1019,6 +1222,10 @@ export type GalleryImageCreateArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
+  /**
    * The data needed to create a GalleryImage.
    */
   data: Prisma.XOR<Prisma.GalleryImageCreateInput, Prisma.GalleryImageUncheckedCreateInput>
@@ -1052,6 +1259,10 @@ export type GalleryImageCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    */
   data: Prisma.GalleryImageCreateManyInput | Prisma.GalleryImageCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1066,6 +1277,10 @@ export type GalleryImageUpdateArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
   /**
    * The data needed to update a GalleryImage.
    */
@@ -1118,6 +1333,10 @@ export type GalleryImageUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Ex
    * Limit how many GalleryImages to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1132,6 +1351,10 @@ export type GalleryImageUpsertArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
   /**
    * The filter to search for the GalleryImage to update in case it exists.
    */
@@ -1159,6 +1382,10 @@ export type GalleryImageDeleteArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
+  /**
    * Filter which GalleryImage to delete.
    */
   where: Prisma.GalleryImageWhereUniqueInput
@@ -1179,6 +1406,25 @@ export type GalleryImageDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * GalleryImage.album
+ */
+export type GalleryImage$albumArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the GalleryAlbum
+   */
+  select?: Prisma.GalleryAlbumSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the GalleryAlbum
+   */
+  omit?: Prisma.GalleryAlbumOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryAlbumInclude<ExtArgs> | null
+  where?: Prisma.GalleryAlbumWhereInput
+}
+
+/**
  * GalleryImage without action
  */
 export type GalleryImageDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1190,4 +1436,8 @@ export type GalleryImageDefaultArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Omit specific fields from the GalleryImage
    */
   omit?: Prisma.GalleryImageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GalleryImageInclude<ExtArgs> | null
 }

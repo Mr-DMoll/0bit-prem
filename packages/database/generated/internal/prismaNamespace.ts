@@ -397,6 +397,9 @@ export const ModelName = {
   OrderItem: 'OrderItem',
   PaymentTransaction: 'PaymentTransaction',
   BookingInquiry: 'BookingInquiry',
+  BookingEventTypeOption: 'BookingEventTypeOption',
+  BookingReply: 'BookingReply',
+  GalleryAlbum: 'GalleryAlbum',
   GalleryImage: 'GalleryImage',
   Event: 'Event'
 } as const
@@ -414,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "auditLog" | "notification" | "systemSetting" | "album" | "track" | "albumPurchase" | "product" | "productVariant" | "order" | "orderItem" | "paymentTransaction" | "bookingInquiry" | "galleryImage" | "event"
+    modelProps: "user" | "auditLog" | "notification" | "systemSetting" | "album" | "track" | "albumPurchase" | "product" | "productVariant" | "order" | "orderItem" | "paymentTransaction" | "bookingInquiry" | "bookingEventTypeOption" | "bookingReply" | "galleryAlbum" | "galleryImage" | "event"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1380,6 +1383,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BookingEventTypeOption: {
+      payload: Prisma.$BookingEventTypeOptionPayload<ExtArgs>
+      fields: Prisma.BookingEventTypeOptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BookingEventTypeOptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BookingEventTypeOptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        findFirst: {
+          args: Prisma.BookingEventTypeOptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BookingEventTypeOptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        findMany: {
+          args: Prisma.BookingEventTypeOptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>[]
+        }
+        create: {
+          args: Prisma.BookingEventTypeOptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        createMany: {
+          args: Prisma.BookingEventTypeOptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BookingEventTypeOptionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>[]
+        }
+        delete: {
+          args: Prisma.BookingEventTypeOptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        update: {
+          args: Prisma.BookingEventTypeOptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.BookingEventTypeOptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BookingEventTypeOptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BookingEventTypeOptionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>[]
+        }
+        upsert: {
+          args: Prisma.BookingEventTypeOptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEventTypeOptionPayload>
+        }
+        aggregate: {
+          args: Prisma.BookingEventTypeOptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBookingEventTypeOption>
+        }
+        groupBy: {
+          args: Prisma.BookingEventTypeOptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingEventTypeOptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BookingEventTypeOptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingEventTypeOptionCountAggregateOutputType> | number
+        }
+      }
+    }
+    BookingReply: {
+      payload: Prisma.$BookingReplyPayload<ExtArgs>
+      fields: Prisma.BookingReplyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BookingReplyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BookingReplyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        findFirst: {
+          args: Prisma.BookingReplyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BookingReplyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        findMany: {
+          args: Prisma.BookingReplyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>[]
+        }
+        create: {
+          args: Prisma.BookingReplyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        createMany: {
+          args: Prisma.BookingReplyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BookingReplyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>[]
+        }
+        delete: {
+          args: Prisma.BookingReplyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        update: {
+          args: Prisma.BookingReplyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        deleteMany: {
+          args: Prisma.BookingReplyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BookingReplyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BookingReplyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>[]
+        }
+        upsert: {
+          args: Prisma.BookingReplyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingReplyPayload>
+        }
+        aggregate: {
+          args: Prisma.BookingReplyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBookingReply>
+        }
+        groupBy: {
+          args: Prisma.BookingReplyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingReplyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BookingReplyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingReplyCountAggregateOutputType> | number
+        }
+      }
+    }
+    GalleryAlbum: {
+      payload: Prisma.$GalleryAlbumPayload<ExtArgs>
+      fields: Prisma.GalleryAlbumFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GalleryAlbumFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GalleryAlbumFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        findFirst: {
+          args: Prisma.GalleryAlbumFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GalleryAlbumFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        findMany: {
+          args: Prisma.GalleryAlbumFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>[]
+        }
+        create: {
+          args: Prisma.GalleryAlbumCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        createMany: {
+          args: Prisma.GalleryAlbumCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GalleryAlbumCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>[]
+        }
+        delete: {
+          args: Prisma.GalleryAlbumDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        update: {
+          args: Prisma.GalleryAlbumUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        deleteMany: {
+          args: Prisma.GalleryAlbumDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GalleryAlbumUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GalleryAlbumUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>[]
+        }
+        upsert: {
+          args: Prisma.GalleryAlbumUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GalleryAlbumPayload>
+        }
+        aggregate: {
+          args: Prisma.GalleryAlbumAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGalleryAlbum>
+        }
+        groupBy: {
+          args: Prisma.GalleryAlbumGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GalleryAlbumGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GalleryAlbumCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GalleryAlbumCountAggregateOutputType> | number
+        }
+      }
+    }
     GalleryImage: {
       payload: Prisma.$GalleryImagePayload<ExtArgs>
       fields: Prisma.GalleryImageFieldRefs
@@ -1635,6 +1860,7 @@ export const SystemSettingScalarFieldEnum = {
   id: 'id',
   key: 'key',
   value: 'value',
+  previousValue: 'previousValue',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1770,6 +1996,10 @@ export const BookingInquiryScalarFieldEnum = {
   eventDetails: 'eventDetails',
   message: 'message',
   status: 'status',
+  eventType: 'eventType',
+  eventDate: 'eventDate',
+  venue: 'venue',
+  internalNotes: 'internalNotes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1777,11 +2007,46 @@ export const BookingInquiryScalarFieldEnum = {
 export type BookingInquiryScalarFieldEnum = (typeof BookingInquiryScalarFieldEnum)[keyof typeof BookingInquiryScalarFieldEnum]
 
 
+export const BookingEventTypeOptionScalarFieldEnum = {
+  id: 'id',
+  label: 'label',
+  isEnabled: 'isEnabled',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BookingEventTypeOptionScalarFieldEnum = (typeof BookingEventTypeOptionScalarFieldEnum)[keyof typeof BookingEventTypeOptionScalarFieldEnum]
+
+
+export const BookingReplyScalarFieldEnum = {
+  id: 'id',
+  bookingInquiryId: 'bookingInquiryId',
+  message: 'message',
+  sentByEmail: 'sentByEmail',
+  createdAt: 'createdAt'
+} as const
+
+export type BookingReplyScalarFieldEnum = (typeof BookingReplyScalarFieldEnum)[keyof typeof BookingReplyScalarFieldEnum]
+
+
+export const GalleryAlbumScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GalleryAlbumScalarFieldEnum = (typeof GalleryAlbumScalarFieldEnum)[keyof typeof GalleryAlbumScalarFieldEnum]
+
+
 export const GalleryImageScalarFieldEnum = {
   id: 'id',
   url: 'url',
   caption: 'caption',
   order: 'order',
+  albumId: 'albumId',
   createdAt: 'createdAt'
 } as const
 
@@ -2162,6 +2427,9 @@ export type GlobalOmitConfig = {
   orderItem?: Prisma.OrderItemOmit
   paymentTransaction?: Prisma.PaymentTransactionOmit
   bookingInquiry?: Prisma.BookingInquiryOmit
+  bookingEventTypeOption?: Prisma.BookingEventTypeOptionOmit
+  bookingReply?: Prisma.BookingReplyOmit
+  galleryAlbum?: Prisma.GalleryAlbumOmit
   galleryImage?: Prisma.GalleryImageOmit
   event?: Prisma.EventOmit
 }

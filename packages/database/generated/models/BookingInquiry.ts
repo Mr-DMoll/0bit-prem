@@ -32,6 +32,10 @@ export type BookingInquiryMinAggregateOutputType = {
   eventDetails: string | null
   message: string | null
   status: $Enums.BookingStatus | null
+  eventType: string | null
+  eventDate: Date | null
+  venue: string | null
+  internalNotes: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +48,10 @@ export type BookingInquiryMaxAggregateOutputType = {
   eventDetails: string | null
   message: string | null
   status: $Enums.BookingStatus | null
+  eventType: string | null
+  eventDate: Date | null
+  venue: string | null
+  internalNotes: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +64,10 @@ export type BookingInquiryCountAggregateOutputType = {
   eventDetails: number
   message: number
   status: number
+  eventType: number
+  eventDate: number
+  venue: number
+  internalNotes: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +82,10 @@ export type BookingInquiryMinAggregateInputType = {
   eventDetails?: true
   message?: true
   status?: true
+  eventType?: true
+  eventDate?: true
+  venue?: true
+  internalNotes?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +98,10 @@ export type BookingInquiryMaxAggregateInputType = {
   eventDetails?: true
   message?: true
   status?: true
+  eventType?: true
+  eventDate?: true
+  venue?: true
+  internalNotes?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +114,10 @@ export type BookingInquiryCountAggregateInputType = {
   eventDetails?: true
   message?: true
   status?: true
+  eventType?: true
+  eventDate?: true
+  venue?: true
+  internalNotes?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -176,9 +200,13 @@ export type BookingInquiryGroupByOutputType = {
   name: string
   email: string
   phone: string | null
-  eventDetails: string
+  eventDetails: string | null
   message: string | null
   status: $Enums.BookingStatus
+  eventType: string | null
+  eventDate: Date | null
+  venue: string | null
+  internalNotes: string | null
   createdAt: Date
   updatedAt: Date
   _count: BookingInquiryCountAggregateOutputType | null
@@ -209,11 +237,16 @@ export type BookingInquiryWhereInput = {
   name?: Prisma.StringFilter<"BookingInquiry"> | string
   email?: Prisma.StringFilter<"BookingInquiry"> | string
   phone?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
-  eventDetails?: Prisma.StringFilter<"BookingInquiry"> | string
+  eventDetails?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   message?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"BookingInquiry"> | $Enums.BookingStatus
+  eventType?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
+  eventDate?: Prisma.DateTimeNullableFilter<"BookingInquiry"> | Date | string | null
+  venue?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
+  internalNotes?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BookingInquiry"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BookingInquiry"> | Date | string
+  replies?: Prisma.BookingReplyListRelationFilter
 }
 
 export type BookingInquiryOrderByWithRelationInput = {
@@ -221,11 +254,16 @@ export type BookingInquiryOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
-  eventDetails?: Prisma.SortOrder
+  eventDetails?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  eventType?: Prisma.SortOrderInput | Prisma.SortOrder
+  eventDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  venue?: Prisma.SortOrderInput | Prisma.SortOrder
+  internalNotes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  replies?: Prisma.BookingReplyOrderByRelationAggregateInput
 }
 
 export type BookingInquiryWhereUniqueInput = Prisma.AtLeast<{
@@ -236,11 +274,16 @@ export type BookingInquiryWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"BookingInquiry"> | string
   email?: Prisma.StringFilter<"BookingInquiry"> | string
   phone?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
-  eventDetails?: Prisma.StringFilter<"BookingInquiry"> | string
+  eventDetails?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   message?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"BookingInquiry"> | $Enums.BookingStatus
+  eventType?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
+  eventDate?: Prisma.DateTimeNullableFilter<"BookingInquiry"> | Date | string | null
+  venue?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
+  internalNotes?: Prisma.StringNullableFilter<"BookingInquiry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BookingInquiry"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BookingInquiry"> | Date | string
+  replies?: Prisma.BookingReplyListRelationFilter
 }, "id">
 
 export type BookingInquiryOrderByWithAggregationInput = {
@@ -248,9 +291,13 @@ export type BookingInquiryOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
-  eventDetails?: Prisma.SortOrder
+  eventDetails?: Prisma.SortOrderInput | Prisma.SortOrder
   message?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  eventType?: Prisma.SortOrderInput | Prisma.SortOrder
+  eventDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  venue?: Prisma.SortOrderInput | Prisma.SortOrder
+  internalNotes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BookingInquiryCountOrderByAggregateInput
@@ -266,9 +313,13 @@ export type BookingInquiryScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"BookingInquiry"> | string
   email?: Prisma.StringWithAggregatesFilter<"BookingInquiry"> | string
   phone?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
-  eventDetails?: Prisma.StringWithAggregatesFilter<"BookingInquiry"> | string
+  eventDetails?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
   message?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
   status?: Prisma.EnumBookingStatusWithAggregatesFilter<"BookingInquiry"> | $Enums.BookingStatus
+  eventType?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
+  eventDate?: Prisma.DateTimeNullableWithAggregatesFilter<"BookingInquiry"> | Date | string | null
+  venue?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
+  internalNotes?: Prisma.StringNullableWithAggregatesFilter<"BookingInquiry"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BookingInquiry"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BookingInquiry"> | Date | string
 }
@@ -278,11 +329,16 @@ export type BookingInquiryCreateInput = {
   name: string
   email: string
   phone?: string | null
-  eventDetails: string
+  eventDetails?: string | null
   message?: string | null
   status?: $Enums.BookingStatus
+  eventType?: string | null
+  eventDate?: Date | string | null
+  venue?: string | null
+  internalNotes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  replies?: Prisma.BookingReplyCreateNestedManyWithoutBookingInquiryInput
 }
 
 export type BookingInquiryUncheckedCreateInput = {
@@ -290,11 +346,16 @@ export type BookingInquiryUncheckedCreateInput = {
   name: string
   email: string
   phone?: string | null
-  eventDetails: string
+  eventDetails?: string | null
   message?: string | null
   status?: $Enums.BookingStatus
+  eventType?: string | null
+  eventDate?: Date | string | null
+  venue?: string | null
+  internalNotes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  replies?: Prisma.BookingReplyUncheckedCreateNestedManyWithoutBookingInquiryInput
 }
 
 export type BookingInquiryUpdateInput = {
@@ -302,11 +363,16 @@ export type BookingInquiryUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  eventDetails?: Prisma.StringFieldUpdateOperationsInput | string
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replies?: Prisma.BookingReplyUpdateManyWithoutBookingInquiryNestedInput
 }
 
 export type BookingInquiryUncheckedUpdateInput = {
@@ -314,11 +380,16 @@ export type BookingInquiryUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  eventDetails?: Prisma.StringFieldUpdateOperationsInput | string
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  replies?: Prisma.BookingReplyUncheckedUpdateManyWithoutBookingInquiryNestedInput
 }
 
 export type BookingInquiryCreateManyInput = {
@@ -326,9 +397,13 @@ export type BookingInquiryCreateManyInput = {
   name: string
   email: string
   phone?: string | null
-  eventDetails: string
+  eventDetails?: string | null
   message?: string | null
   status?: $Enums.BookingStatus
+  eventType?: string | null
+  eventDate?: Date | string | null
+  venue?: string | null
+  internalNotes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -338,9 +413,13 @@ export type BookingInquiryUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  eventDetails?: Prisma.StringFieldUpdateOperationsInput | string
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -350,9 +429,13 @@ export type BookingInquiryUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  eventDetails?: Prisma.StringFieldUpdateOperationsInput | string
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -365,6 +448,10 @@ export type BookingInquiryCountOrderByAggregateInput = {
   eventDetails?: Prisma.SortOrder
   message?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  eventDate?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
+  internalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -377,6 +464,10 @@ export type BookingInquiryMaxOrderByAggregateInput = {
   eventDetails?: Prisma.SortOrder
   message?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  eventDate?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
+  internalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -389,14 +480,146 @@ export type BookingInquiryMinOrderByAggregateInput = {
   eventDetails?: Prisma.SortOrder
   message?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  eventType?: Prisma.SortOrder
+  eventDate?: Prisma.SortOrder
+  venue?: Prisma.SortOrder
+  internalNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type BookingInquiryScalarRelationFilter = {
+  is?: Prisma.BookingInquiryWhereInput
+  isNot?: Prisma.BookingInquiryWhereInput
 }
 
 export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
 
+export type BookingInquiryCreateNestedOneWithoutRepliesInput = {
+  create?: Prisma.XOR<Prisma.BookingInquiryCreateWithoutRepliesInput, Prisma.BookingInquiryUncheckedCreateWithoutRepliesInput>
+  connectOrCreate?: Prisma.BookingInquiryCreateOrConnectWithoutRepliesInput
+  connect?: Prisma.BookingInquiryWhereUniqueInput
+}
+
+export type BookingInquiryUpdateOneRequiredWithoutRepliesNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingInquiryCreateWithoutRepliesInput, Prisma.BookingInquiryUncheckedCreateWithoutRepliesInput>
+  connectOrCreate?: Prisma.BookingInquiryCreateOrConnectWithoutRepliesInput
+  upsert?: Prisma.BookingInquiryUpsertWithoutRepliesInput
+  connect?: Prisma.BookingInquiryWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BookingInquiryUpdateToOneWithWhereWithoutRepliesInput, Prisma.BookingInquiryUpdateWithoutRepliesInput>, Prisma.BookingInquiryUncheckedUpdateWithoutRepliesInput>
+}
+
+export type BookingInquiryCreateWithoutRepliesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  eventDetails?: string | null
+  message?: string | null
+  status?: $Enums.BookingStatus
+  eventType?: string | null
+  eventDate?: Date | string | null
+  venue?: string | null
+  internalNotes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BookingInquiryUncheckedCreateWithoutRepliesInput = {
+  id?: string
+  name: string
+  email: string
+  phone?: string | null
+  eventDetails?: string | null
+  message?: string | null
+  status?: $Enums.BookingStatus
+  eventType?: string | null
+  eventDate?: Date | string | null
+  venue?: string | null
+  internalNotes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type BookingInquiryCreateOrConnectWithoutRepliesInput = {
+  where: Prisma.BookingInquiryWhereUniqueInput
+  create: Prisma.XOR<Prisma.BookingInquiryCreateWithoutRepliesInput, Prisma.BookingInquiryUncheckedCreateWithoutRepliesInput>
+}
+
+export type BookingInquiryUpsertWithoutRepliesInput = {
+  update: Prisma.XOR<Prisma.BookingInquiryUpdateWithoutRepliesInput, Prisma.BookingInquiryUncheckedUpdateWithoutRepliesInput>
+  create: Prisma.XOR<Prisma.BookingInquiryCreateWithoutRepliesInput, Prisma.BookingInquiryUncheckedCreateWithoutRepliesInput>
+  where?: Prisma.BookingInquiryWhereInput
+}
+
+export type BookingInquiryUpdateToOneWithWhereWithoutRepliesInput = {
+  where?: Prisma.BookingInquiryWhereInput
+  data: Prisma.XOR<Prisma.BookingInquiryUpdateWithoutRepliesInput, Prisma.BookingInquiryUncheckedUpdateWithoutRepliesInput>
+}
+
+export type BookingInquiryUpdateWithoutRepliesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type BookingInquiryUncheckedUpdateWithoutRepliesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  eventType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  venue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type BookingInquiryCountOutputType
+ */
+
+export type BookingInquiryCountOutputType = {
+  replies: number
+}
+
+export type BookingInquiryCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  replies?: boolean | BookingInquiryCountOutputTypeCountRepliesArgs
+}
+
+/**
+ * BookingInquiryCountOutputType without action
+ */
+export type BookingInquiryCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BookingInquiryCountOutputType
+   */
+  select?: Prisma.BookingInquiryCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BookingInquiryCountOutputType without action
+ */
+export type BookingInquiryCountOutputTypeCountRepliesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BookingReplyWhereInput
+}
 
 
 export type BookingInquirySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -407,8 +630,14 @@ export type BookingInquirySelect<ExtArgs extends runtime.Types.Extensions.Intern
   eventDetails?: boolean
   message?: boolean
   status?: boolean
+  eventType?: boolean
+  eventDate?: boolean
+  venue?: boolean
+  internalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  replies?: boolean | Prisma.BookingInquiry$repliesArgs<ExtArgs>
+  _count?: boolean | Prisma.BookingInquiryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["bookingInquiry"]>
 
 export type BookingInquirySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -419,6 +648,10 @@ export type BookingInquirySelectCreateManyAndReturn<ExtArgs extends runtime.Type
   eventDetails?: boolean
   message?: boolean
   status?: boolean
+  eventType?: boolean
+  eventDate?: boolean
+  venue?: boolean
+  internalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["bookingInquiry"]>
@@ -431,6 +664,10 @@ export type BookingInquirySelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   eventDetails?: boolean
   message?: boolean
   status?: boolean
+  eventType?: boolean
+  eventDate?: boolean
+  venue?: boolean
+  internalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["bookingInquiry"]>
@@ -443,23 +680,39 @@ export type BookingInquirySelectScalar = {
   eventDetails?: boolean
   message?: boolean
   status?: boolean
+  eventType?: boolean
+  eventDate?: boolean
+  venue?: boolean
+  internalNotes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BookingInquiryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "eventDetails" | "message" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["bookingInquiry"]>
+export type BookingInquiryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "eventDetails" | "message" | "status" | "eventType" | "eventDate" | "venue" | "internalNotes" | "createdAt" | "updatedAt", ExtArgs["result"]["bookingInquiry"]>
+export type BookingInquiryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  replies?: boolean | Prisma.BookingInquiry$repliesArgs<ExtArgs>
+  _count?: boolean | Prisma.BookingInquiryCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type BookingInquiryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type BookingInquiryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $BookingInquiryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BookingInquiry"
-  objects: {}
+  objects: {
+    replies: Prisma.$BookingReplyPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     email: string
     phone: string | null
-    eventDetails: string
+    eventDetails: string | null
     message: string | null
     status: $Enums.BookingStatus
+    eventType: string | null
+    eventDate: Date | null
+    venue: string | null
+    internalNotes: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["bookingInquiry"]>
@@ -856,6 +1109,7 @@ readonly fields: BookingInquiryFieldRefs;
  */
 export interface Prisma__BookingInquiryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  replies<T extends Prisma.BookingInquiry$repliesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BookingInquiry$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingReplyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -892,6 +1146,10 @@ export interface BookingInquiryFieldRefs {
   readonly eventDetails: Prisma.FieldRef<"BookingInquiry", 'String'>
   readonly message: Prisma.FieldRef<"BookingInquiry", 'String'>
   readonly status: Prisma.FieldRef<"BookingInquiry", 'BookingStatus'>
+  readonly eventType: Prisma.FieldRef<"BookingInquiry", 'String'>
+  readonly eventDate: Prisma.FieldRef<"BookingInquiry", 'DateTime'>
+  readonly venue: Prisma.FieldRef<"BookingInquiry", 'String'>
+  readonly internalNotes: Prisma.FieldRef<"BookingInquiry", 'String'>
   readonly createdAt: Prisma.FieldRef<"BookingInquiry", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BookingInquiry", 'DateTime'>
 }
@@ -911,6 +1169,10 @@ export type BookingInquiryFindUniqueArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * Filter, which BookingInquiry to fetch.
    */
   where: Prisma.BookingInquiryWhereUniqueInput
@@ -929,6 +1191,10 @@ export type BookingInquiryFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Ex
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * Filter, which BookingInquiry to fetch.
    */
   where: Prisma.BookingInquiryWhereUniqueInput
@@ -946,6 +1212,10 @@ export type BookingInquiryFindFirstArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the BookingInquiry
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
   /**
    * Filter, which BookingInquiry to fetch.
    */
@@ -995,6 +1265,10 @@ export type BookingInquiryFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Ext
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * Filter, which BookingInquiry to fetch.
    */
   where?: Prisma.BookingInquiryWhereInput
@@ -1042,6 +1316,10 @@ export type BookingInquiryFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Omit specific fields from the BookingInquiry
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
   /**
    * Filter, which BookingInquiries to fetch.
    */
@@ -1091,6 +1369,10 @@ export type BookingInquiryCreateArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * The data needed to create a BookingInquiry.
    */
   data: Prisma.XOR<Prisma.BookingInquiryCreateInput, Prisma.BookingInquiryUncheckedCreateInput>
@@ -1138,6 +1420,10 @@ export type BookingInquiryUpdateArgs<ExtArgs extends runtime.Types.Extensions.In
    * Omit specific fields from the BookingInquiry
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
   /**
    * The data needed to update a BookingInquiry.
    */
@@ -1205,6 +1491,10 @@ export type BookingInquiryUpsertArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * The filter to search for the BookingInquiry to update in case it exists.
    */
   where: Prisma.BookingInquiryWhereUniqueInput
@@ -1231,6 +1521,10 @@ export type BookingInquiryDeleteArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
+  /**
    * Filter which BookingInquiry to delete.
    */
   where: Prisma.BookingInquiryWhereUniqueInput
@@ -1251,6 +1545,30 @@ export type BookingInquiryDeleteManyArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
+ * BookingInquiry.replies
+ */
+export type BookingInquiry$repliesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BookingReply
+   */
+  select?: Prisma.BookingReplySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BookingReply
+   */
+  omit?: Prisma.BookingReplyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingReplyInclude<ExtArgs> | null
+  where?: Prisma.BookingReplyWhereInput
+  orderBy?: Prisma.BookingReplyOrderByWithRelationInput | Prisma.BookingReplyOrderByWithRelationInput[]
+  cursor?: Prisma.BookingReplyWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BookingReplyScalarFieldEnum | Prisma.BookingReplyScalarFieldEnum[]
+}
+
+/**
  * BookingInquiry without action
  */
 export type BookingInquiryDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1262,4 +1580,8 @@ export type BookingInquiryDefaultArgs<ExtArgs extends runtime.Types.Extensions.I
    * Omit specific fields from the BookingInquiry
    */
   omit?: Prisma.BookingInquiryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInquiryInclude<ExtArgs> | null
 }

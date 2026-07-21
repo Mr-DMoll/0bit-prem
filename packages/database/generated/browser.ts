@@ -83,6 +83,21 @@ export type PaymentTransaction = Prisma.PaymentTransactionModel
  */
 export type BookingInquiry = Prisma.BookingInquiryModel
 /**
+ * Model BookingEventTypeOption
+ * 
+ */
+export type BookingEventTypeOption = Prisma.BookingEventTypeOptionModel
+/**
+ * Model BookingReply
+ * 
+ */
+export type BookingReply = Prisma.BookingReplyModel
+/**
+ * Model GalleryAlbum
+ * 
+ */
+export type GalleryAlbum = Prisma.GalleryAlbumModel
+/**
  * Model GalleryImage
  * 
  */
