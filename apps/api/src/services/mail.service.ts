@@ -18,22 +18,18 @@ async function send(payload: Parameters<typeof resend.emails.send>[0]) {
 // already live. Whoever it's addressed to can sign in with Google whenever
 // they like, whether they've seen this email or not.
 //
-// Dark is used as an accent (header band only), not the whole email — a fully
-// dark background email reads poorly in most clients and is harder to read.
-//
-// No logo image here — Gmail blocks remote images outright on mail it's
-// classified as spam (regardless of whether the URL is valid), which a new
-// sending domain runs into constantly during its reputation warm-up. Text-only
-// header, same approach as the reference design.
+// Kept deliberately plain: a single div, one muted-color text link (not a
+// boxed button), no background color blocks, no bordered callout box. The
+// earlier version (nested tables, dark header band, gold button, bordered
+// notice box) landed in spam — that kind of layout pattern-matches marketing/
+// phishing templates far more than a plain email does, on top of which this
+// sending domain has limited volume/reputation with Gmail so far. This is
+// intentionally closer to the original template that was known to land in
+// the inbox.
 
-const GOLD        = "#f59e0b";
-const INK         = "#0e0401";
-const CREAM       = "#fbf9ef";
-const GOLD_DIM    = "#e0b876";
-const BODY_TEXT   = "#374151";
-const CALLOUT_BG  = "#fdf3e2";
-const CALLOUT_TEXT = "#57534e";
-const FOOTER_TEXT = "#9ca3af";
+const ACCENT    = "#b45309";
+const BODY_TEXT = "#1f2937";
+const MUTED     = "#6b7280";
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 const ROLE_ARTICLE: Record<string, string> = {
@@ -51,58 +47,23 @@ export async function sendInviteEmail(
   await send({
     from:    FROM,
     to,
-    subject: `You're in — your ${APP} account is ready`,
+    subject: `You've been added to ${APP}`,
     html: `
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:40px 16px;font-family:${SANS};">
-        <tr>
-          <td align="center">
-            <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
-              <tr>
-                <td align="center" style="background:${INK};padding:30px 32px 26px;">
-                  <p style="margin:0;color:${GOLD_DIM};font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">
-                    ${APP}
-                  </p>
-                  <p style="margin:8px 0 0;color:${CREAM};font-size:20px;font-weight:700;">
-                    You're in
-                  </p>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:36px 32px 8px;">
-                  <p style="margin:0 0 24px;color:${BODY_TEXT};font-size:15px;line-height:1.6;">
-                    Hi ${name}, you've been added to ${APP} as ${roleText}.
-                  </p>
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td align="center">
-                        <a href="${signInUrl}" style="display:inline-block;padding:13px 34px;background:${GOLD};color:${INK};border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
-                          Sign in to ${APP}
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:28px 32px 36px;">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CALLOUT_BG};border-left:4px solid ${GOLD};border-radius:4px;">
-                    <tr>
-                      <td style="padding:14px 16px;">
-                        <p style="margin:0;color:${CALLOUT_TEXT};font-size:13px;line-height:1.5;">
-                          Sign in anytime with Google — no password needed. This isn't time-limited.
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            <p style="margin:20px 0 0;color:${FOOTER_TEXT};font-size:12px;text-align:center;">
-              ${APP}
-            </p>
-          </td>
-        </tr>
-      </table>
+      <div style="font-family:${SANS};max-width:480px;margin:0 auto;padding:32px;color:${BODY_TEXT};">
+        <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${ACCENT};">
+          ${APP}
+        </p>
+        <h1 style="margin:0 0 18px;font-size:19px;font-weight:700;">You're in</h1>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+          Hi ${name}, you've been added to ${APP} as ${roleText}.
+        </p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+          <a href="${signInUrl}" style="color:${ACCENT};font-weight:700;text-decoration:none;">Sign in to ${APP} →</a>
+        </p>
+        <p style="margin:24px 0 0;font-size:13px;color:${MUTED};">
+          Sign in anytime with Google — no password needed.
+        </p>
+      </div>
     `,
   });
 }
