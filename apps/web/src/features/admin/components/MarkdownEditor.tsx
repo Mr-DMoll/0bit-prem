@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { Bold, Italic, Heading2, List, ListOrdered, Quote, Link as LinkIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { Bold, Italic, Heading2, List, ListOrdered, Quote, Link as LinkIcon, Image as ImageIcon, Loader2 } from "lucide-react";
 import { marked } from "marked";
+import { uploadsService } from "../services/uploads.service";
+import { useToast } from "@/shared/context/ToastContext";
 
 interface MarkdownEditorProps {
   value: string;
@@ -32,6 +34,35 @@ const paneLabelStyle: React.CSSProperties = {
 // public site's amber theme — that's expected, this is the admin UI.
 export default function MarkdownEditor({ value, onChange, minHeight = "220px", placeholder }: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const toast = useToast();
+
+  const insertAtCursor = (text: string) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const newValue = value.slice(0, start) + text + value.slice(end);
+    onChange(newValue);
+    requestAnimationFrame(() => {
+      el.focus();
+      const at = start + text.length;
+      el.setSelectionRange(at, at);
+    });
+  };
+
+  const handleImageSelected = async (file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadsService.upload(file, "content");
+      insertAtCursor(`![](${url})`);
+    } catch {
+      toast("Image upload failed. Please try again.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const applyWrap = (before: string, after: string, placeholderText: string) => {
     const el = textareaRef.current;
@@ -91,6 +122,28 @@ export default function MarkdownEditor({ value, onChange, minHeight = "220px", p
             {t.icon}
           </button>
         ))}
+        <button
+          type="button"
+          title="Insert image"
+          aria-label="Insert image"
+          disabled={isUploadingImage}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => imageInputRef.current?.click()}
+          style={{ ...toolbarBtnStyle, cursor: isUploadingImage ? "not-allowed" : "pointer" }}
+        >
+          {isUploadingImage ? <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} /> : <ImageIcon size={14} />}
+        </button>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImageSelected(file);
+            e.target.value = "";
+          }}
+        />
       </div>
 
       <div style={{ display: "flex", alignItems: "stretch" }}>
