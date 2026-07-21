@@ -39,9 +39,12 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("auth_token");
       const { pathname } = window.location;
       const inProtectedArea = PROTECTED_PATH_PREFIXES.some((p) => pathname.startsWith(p));
-      // Avoid redirect loop on the staff login page itself
-      if (inProtectedArea && !pathname.startsWith("/staff-login")) {
-        window.location.replace("/staff-login");
+      // Super Admin's login route is private/unlisted — only that subtree
+      // bounces there; admin/manager land on the public site's Google button.
+      const loginPath = pathname.startsWith("/super-admin") ? "/console-0726" : "/";
+      // Avoid a redirect loop on the login page itself
+      if (inProtectedArea && pathname !== loginPath) {
+        window.location.replace(loginPath);
       }
     }
     return Promise.reject(err);

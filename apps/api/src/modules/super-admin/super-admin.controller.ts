@@ -1,4 +1,3 @@
-import { randomBytes } from "crypto";
 import { Request, Response } from "express";
 import { prisma } from "@repo/database";
 import { HttpStatus } from "@repo/types";
@@ -50,28 +49,21 @@ export const inviteAdmin = catchAsync(async (req: Request, res: Response) => {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new AppError("User with this email already exists", HttpStatus.CONFLICT);
 
-  const code    = randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
   const admin = await prisma.user.create({
     data: {
       email,
-      password:            "",
-      role:                "ADMIN",
-      accountStatus:       "PENDING",
-      firstName:           firstName ?? null,
-      lastName:            lastName  ?? null,
-      invitedById:         req.user!.userId,
-      verificationCode:    code,
-      verificationExpires: expires,
+      password:      "",
+      role:          "ADMIN",
+      accountStatus: "PENDING",
+      firstName:     firstName ?? null,
+      lastName:      lastName  ?? null,
+      invitedById:   req.user!.userId,
     },
   });
 
-  const inviteLink = `${process.env.FRONTEND_URL}/set-password?token=${code}&email=${encodeURIComponent(email)}`;
-
   let emailSent = true;
   try {
-    await sendInviteEmail(email, inviteLink, firstName ?? "Admin");
+    await sendInviteEmail(email, firstName ?? "there", "Admin");
   } catch (mailErr: any) {
     emailSent = false;
     console.error("❌ [inviteAdmin] email failed:", mailErr?.message);
@@ -142,16 +134,7 @@ export const resendAdminInvite = catchAsync(async (req: Request, res: Response) 
   if (!admin) throw new AppError("Admin not found", HttpStatus.NOT_FOUND);
   if (admin.accountStatus !== "PENDING") throw new AppError("Admin is not in PENDING state", HttpStatus.BAD_REQUEST);
 
-  const code    = randomBytes(32).toString("hex");
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-  await prisma.user.update({
-    where: { id },
-    data:  { verificationCode: code, verificationExpires: expires },
-  });
-
-  const inviteLink = `${process.env.FRONTEND_URL}/set-password?token=${code}&email=${encodeURIComponent(admin.email)}`;
-  await sendInviteEmail(admin.email, inviteLink, admin.firstName ?? "Admin");
+  await sendInviteEmail(admin.email, admin.firstName ?? "there", "Admin");
 
   await prisma.auditLog.create({
     data: { userId: req.user!.userId, action: "ADMIN_INVITE_RESENT", meta: { email: admin.email } },

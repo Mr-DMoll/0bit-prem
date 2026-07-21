@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
               <button
-                onClick={() => router.push("/staff-login")}
+                onClick={() => router.push("/console-0726")}
                 style={{
                   width: "100%", padding: "11px", background: "var(--color-accent)", border: "none",
                   borderRadius: "8px", fontSize: "14px", fontWeight: 700,
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
                 {isSubmitting ? "Sending..." : "Send reset link"}
               </button>
 
-              <Link href="/staff-login" style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>
+              <Link href="/console-0726" style={{ textAlign: "center", fontSize: "13px", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>
                 ← Back to sign in
               </Link>
             </form>

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { protect } from "../../middleware/auth.middleware.js";
 import {
   login, logout, getMe,
-  setPassword, forgotPassword, resetPassword, register,
+  forgotPassword, resetPassword, register,
 } from "./auth.controller.js";
 import { googleRedirect, googleCallback } from "./google-oauth.controller.js";
 
@@ -59,15 +59,6 @@ router.post("/logout", protect, logout);
  *       - cookieAuth: []
  */
 router.get("/me", protect, getMe);
-
-/**
- * @openapi
- * /api/v1/auth/set-password:
- *   post:
- *     tags: [Auth]
- *     summary: Set password from invitation link
- */
-router.post("/set-password", setPassword);
 
 /**
  * @openapi

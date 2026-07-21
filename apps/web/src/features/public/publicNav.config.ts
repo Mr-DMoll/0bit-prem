@@ -8,7 +8,7 @@ export const PUBLIC_NAV: PublicNavItem[] = [
   { href: "/",         label: "Sanctum", icon: "Sparkles"    },
   { href: "/music",    label: "Music",   icon: "Music"       },
   { href: "/harinam",  label: "Harinam", icon: "Flame"       },
-  { href: "/merch",    label: "Merch",   icon: "ShoppingBag" },
+  { href: "/merch",    label: "Shop",    icon: "ShoppingBag" },
   { href: "/gallery",  label: "Gallery", icon: "Images"      },
   { href: "/events",   label: "Events",  icon: "CalendarDays"},
   { href: "/about",    label: "About",   icon: "Info"        },

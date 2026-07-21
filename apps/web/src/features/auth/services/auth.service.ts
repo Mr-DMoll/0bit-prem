@@ -16,12 +16,6 @@ export interface VerifyCodeData {
   code: string;
 }
 
-export interface SetPasswordData {
-  token: string;
-  email: string;
-  password: string;
-}
-
 export interface ForgotPasswordData {
   email: string;
 }
@@ -39,11 +33,6 @@ export const authService = {
 
   async verifyCode(data: VerifyCodeData) {
     const { data: response } = await apiClient.post(endpoints.auth.verifyCode, data);
-    return response;
-  },
-
-  async setPassword(data: SetPasswordData) {
-    const { data: response } = await apiClient.post(endpoints.auth.setPassword, data);
     return response;
   },
 

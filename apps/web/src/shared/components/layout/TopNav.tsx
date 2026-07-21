@@ -127,8 +127,9 @@ export default function TopNav() {
 
   const handleLogout = async () => {
     setDropdownOpen(false);
+    const wasSuperAdmin = user?.role === "SUPER_ADMIN";
     await logout();
-    router.push("/staff-login");
+    router.push(wasSuperAdmin ? "/console-0726" : "/");
   };
 
   return (

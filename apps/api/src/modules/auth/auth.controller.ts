@@ -6,7 +6,7 @@ import { AuthService } from "./auth.service.js";
 import { setAuthCookie, setRoleCookie, clearAuthCookie } from "../../utils/cookie.util.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { AppError }   from "../../utils/appError.js";
-import { sendVerificationEmail, sendPasswordResetEmail, sendInviteEmail } from "../../services/mail.service.js";
+import { sendPasswordResetEmail } from "../../services/mail.service.js";
 
 const authService = new AuthService();
 
@@ -19,17 +19,25 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
   if (!user) throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
 
+  // Password login is reserved for Super Admin — every other role is Google-only,
+  // so a match here would only ever be an unusable placeholder hash.
+  if (user.role !== "SUPER_ADMIN")
+    throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
+
   if (user.accountStatus === "DELETED")
     throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
   if (user.accountStatus === "SUSPENDED")
     throw new AppError("Your account has been suspended", HttpStatus.FORBIDDEN);
-  if (user.accountStatus === "PENDING")
-    throw new AppError("Your account is pending approval", HttpStatus.FORBIDDEN);
   if (!user.password)
-    throw new AppError("Please use your invitation link to set a password first", HttpStatus.UNAUTHORIZED);
+    throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
 
   const match = await authService.verifyPassword(password, user.password);
   if (!match) throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
+
+  if (user.accountStatus === "PENDING") {
+    await prisma.user.update({ where: { id: user.id }, data: { accountStatus: "ACTIVE" } });
+    user.accountStatus = "ACTIVE";
+  }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastActiveAt: new Date() } });
 
@@ -84,46 +92,6 @@ export const getMe = catchAsync(async (req: Request, res: Response) => {
 export const logout = catchAsync(async (req: Request, res: Response) => {
   clearAuthCookie(res);
   return res.status(HttpStatus.OK).json({ status: "success", message: "Logged out" });
-});
-
-// ── Set password (from invite link) ───────────────────────────────────────────
-
-export const setPassword = catchAsync(async (req: Request, res: Response) => {
-  const { token, email, password } = req.body;
-  if (!token || !email || !password)
-    throw new AppError("Token, email and password are required", HttpStatus.BAD_REQUEST);
-
-  const user = await prisma.user.findFirst({
-    where: {
-      email:               email.trim().toLowerCase(),
-      verificationCode:    token,
-      verificationExpires: { gt: new Date() },
-    },
-  });
-
-  if (!user) throw new AppError("Invalid or expired invitation link", HttpStatus.BAD_REQUEST);
-
-  const hashed = await authService.hashPassword(password);
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      password:            hashed,
-      accountStatus:       "ACTIVE",
-      verificationCode:    null,
-      verificationExpires: null,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: { userId: user.id, action: "PASSWORD_SET" },
-  });
-  req.auditLogged = true;
-
-  return res.status(HttpStatus.OK).json({
-    status:  "success",
-    message: "Password set successfully. You can now log in.",
-  });
 });
 
 // ── Forgot password ────────────────────────────────────────────────────────────

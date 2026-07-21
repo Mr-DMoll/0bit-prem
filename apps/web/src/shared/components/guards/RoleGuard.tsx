@@ -18,7 +18,12 @@ export function RoleGuard({ children, allowedRoles, redirectTo }: RoleGuardProps
 
   useEffect(() => {
     if (isLoading) return;
-    if (!user) { router.push("/staff-login"); return; }
+    if (!user) {
+      // Super Admin's login route is private/unlisted — only its own subtree
+      // bounces there; every other role uses the public site's Google button.
+      router.push(allowedRoles.includes("SUPER_ADMIN") ? "/console-0726" : "/");
+      return;
+    }
     // Wrong role: send them to their own dashboard, not a static fallback.
     if (!allowedRoles.includes(user.role)) { router.push(redirectTo ?? ROLE_ROUTES[user.role] ?? "/"); }
   }, [user, isLoading, router, redirectTo, allowedRoles]);

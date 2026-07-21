@@ -3,7 +3,6 @@ import axios from "axios";
 import https from "node:https";
 import { prisma } from "@repo/database";
 import { HttpStatus } from "@repo/types";
-import { AppError }    from "../../utils/appError.js";
 import { AuthService } from "./auth.service.js";
 import env from "../../config/env.config.js";
 
@@ -28,6 +27,9 @@ function callbackUrl() {
 }
 
 // ── Step 1: redirect to Google ────────────────────────────────────────────────
+// Every human (customers and invited staff alike) goes through this one button.
+// Staff accounts are never auto-created here — they only exist if an admin/super
+// admin invited them first — so this single flow is safe to leave wide open.
 
 export function googleRedirect(req: Request, res: Response) {
   if (!env.GOOGLE_CLIENT_ID) {
@@ -37,12 +39,6 @@ export function googleRedirect(req: Request, res: Response) {
     return;
   }
 
-  // "state" round-trips through Google unchanged — used to tell the staff
-  // flow (invite-only, never auto-creates) apart from the customer flow
-  // (open self-signup) on the shared callback, without needing a second
-  // OAuth client or redirect URI registered with Google.
-  const isStaffFlow = req.query.flow === "staff";
-
   const params = new URLSearchParams({
     client_id:     env.GOOGLE_CLIENT_ID,
     redirect_uri:  callbackUrl(),
@@ -50,7 +46,6 @@ export function googleRedirect(req: Request, res: Response) {
     scope:         "openid email profile",
     access_type:   "offline",
     prompt:        "select_account",
-    ...(isStaffFlow ? { state: "staff" } : {}),
   });
 
   res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
@@ -59,15 +54,8 @@ export function googleRedirect(req: Request, res: Response) {
 // ── Step 2: handle callback ────────────────────────────────────────────────────
 
 export async function googleCallback(req: Request, res: Response) {
-  const { code, error, state } = req.query as Record<string, string>;
-  const isStaffFlow = state === "staff";
-  // Staff has a dedicated /staff-login page with an `error` query the page reads directly.
-  // Customers have no standalone login page — sign-in happens in-layout from any page via
-  // AccountHeaderWidget, so failures redirect home with `authError`, which that widget reads.
-  const errorRedirect = (errCode: string) =>
-    isStaffFlow
-      ? `${env.FRONTEND_URL}/staff-login?error=${errCode}`
-      : `${env.FRONTEND_URL}/?authError=${errCode}`;
+  const { code, error } = req.query as Record<string, string>;
+  const errorRedirect = (errCode: string) => `${env.FRONTEND_URL}/?authError=${errCode}`;
 
   if (error || !code) {
     return res.redirect(errorRedirect("google_denied"));
@@ -117,14 +105,9 @@ export async function googleCallback(req: Request, res: Response) {
       });
 
       if (existing) {
-        // Staff sign-in must already be an invited ADMIN/MANAGER/SUPER_ADMIN
-        // account — a customer (role USER) trying the staff path is rejected,
-        // never silently promoted.
-        if (isStaffFlow && existing.role === "USER") {
-          return res.redirect(`${env.FRONTEND_URL}/staff-login?error=not_staff`);
-        }
-
-        // Link existing account to Google
+        // Link existing account to Google — this covers both customers and
+        // invited staff (ADMIN/MANAGER/SUPER_ADMIN); first login also flips
+        // a PENDING invite over to ACTIVE.
         user = await prisma.user.update({
           where: { id: existing.id },
           data:  {
@@ -134,12 +117,9 @@ export async function googleCallback(req: Request, res: Response) {
             accountStatus:      existing.accountStatus === "PENDING" ? "ACTIVE" : existing.accountStatus,
           },
         });
-      } else if (isStaffFlow) {
-        // Staff accounts are never auto-created — they must already exist
-        // via an admin/super-admin invite.
-        return res.redirect(`${env.FRONTEND_URL}/staff-login?error=not_invited`);
       } else {
-        // Brand-new user via Google — always allowed with USER role
+        // Brand-new user via Google — always allowed with USER role.
+        // Staff roles are never auto-created; they must already exist via invite.
         user = await prisma.user.create({
           data: {
             email:              profile.email.toLowerCase(),

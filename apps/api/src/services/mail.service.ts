@@ -14,24 +14,95 @@ async function send(payload: Parameters<typeof resend.emails.send>[0]) {
 }
 
 // ── Invite email ───────────────────────────────────────────────────────────────
+// Purely a courtesy notification — there's no token/expiry, the account is
+// already live. Whoever it's addressed to can sign in with Google whenever
+// they like, whether they've seen this email or not.
+//
+// Dark is used as an accent (header band only), not the whole email — a fully
+// dark background email reads poorly in most clients and is harder to read.
+//
+// No logo image here — Gmail blocks remote images outright on mail it's
+// classified as spam (regardless of whether the URL is valid), which a new
+// sending domain runs into constantly during its reputation warm-up. Text-only
+// header, same approach as the reference design.
+
+const GOLD        = "#f59e0b";
+const INK         = "#0e0401";
+const CREAM       = "#fbf9ef";
+const GOLD_DIM    = "#e0b876";
+const BODY_TEXT   = "#374151";
+const CALLOUT_BG  = "#fdf3e2";
+const CALLOUT_TEXT = "#57534e";
+const FOOTER_TEXT = "#9ca3af";
+const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+const ROLE_ARTICLE: Record<string, string> = {
+  Customer: "a customer",
+  Manager:  "a manager",
+  Admin:    "an admin",
+};
 
 export async function sendInviteEmail(
-  to: string, inviteLink: string, name: string
+  to: string, name: string, roleLabel: "Customer" | "Manager" | "Admin"
 ) {
+  const signInUrl = process.env.FRONTEND_URL || "";
+  const roleText  = ROLE_ARTICLE[roleLabel] ?? "a member";
+
   await send({
     from:    FROM,
     to,
-    subject: `You've been invited to ${APP}`,
+    subject: `You're in — your ${APP} account is ready`,
     html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-        <h2>Welcome to ${APP}</h2>
-        <p>Hi ${name},</p>
-        <p>You've been invited to join ${APP}. Click the button below to set your password and activate your account.</p>
-        <a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#84cc16;color:#0f172a;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">
-          Accept Invitation
-        </a>
-        <p style="color:#666;font-size:13px">This link expires in 7 days. If you didn't expect this email, you can ignore it.</p>
-      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:40px 16px;font-family:${SANS};">
+        <tr>
+          <td align="center">
+            <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td align="center" style="background:${INK};padding:30px 32px 26px;">
+                  <p style="margin:0;color:${GOLD_DIM};font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">
+                    ${APP}
+                  </p>
+                  <p style="margin:8px 0 0;color:${CREAM};font-size:20px;font-weight:700;">
+                    You're in
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:36px 32px 8px;">
+                  <p style="margin:0 0 24px;color:${BODY_TEXT};font-size:15px;line-height:1.6;">
+                    Hi ${name}, you've been added to ${APP} as ${roleText}.
+                  </p>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center">
+                        <a href="${signInUrl}" style="display:inline-block;padding:13px 34px;background:${GOLD};color:${INK};border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">
+                          Sign in to ${APP}
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:28px 32px 36px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CALLOUT_BG};border-left:4px solid ${GOLD};border-radius:4px;">
+                    <tr>
+                      <td style="padding:14px 16px;">
+                        <p style="margin:0;color:${CALLOUT_TEXT};font-size:13px;line-height:1.5;">
+                          Sign in anytime with Google — no password needed. This isn't time-limited.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:20px 0 0;color:${FOOTER_TEXT};font-size:12px;text-align:center;">
+              ${APP}
+            </p>
+          </td>
+        </tr>
+      </table>
     `,
   });
 }
