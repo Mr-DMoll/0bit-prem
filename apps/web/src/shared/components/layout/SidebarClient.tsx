@@ -10,6 +10,7 @@ import {
   FileText, Receipt, UsersRound, Activity, ScrollText,
   Settings, Shield, ToggleLeft, Plug,
   Music, ShoppingBag, CalendarDays, Images, Mail,
+  BarChart3, CreditCard, Percent, Megaphone,
   ChevronRight, ChevronLeft,
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?
   FileText, Receipt, UsersRound, Activity, ScrollText,
   Settings, Shield, ToggleLeft, Plug,
   Music, ShoppingBag, CalendarDays, Images, Mail,
+  BarChart3, CreditCard, Percent, Megaphone,
 };
 
 interface Props {

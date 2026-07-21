@@ -37,7 +37,7 @@ export const NAV_CONFIG: Record<string, NavGroup[]> = {
   ADMIN: [
     {
       items: [
-        { href: "/admin", label: "Overview", icon: "LayoutDashboard" },
+        { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
       ],
     },
     {
@@ -50,18 +50,17 @@ export const NAV_CONFIG: Record<string, NavGroup[]> = {
     {
       label: "Content",
       items: [
-        { href: "/admin/events",   label: "Events",   icon: "CalendarDays" },
-        { href: "/admin/gallery",  label: "Gallery",  icon: "Images"       },
-        { href: "/admin/bookings", label: "Bookings", icon: "Mail"         },
-        { href: "/admin/content",  label: "Content",  icon: "FileText"     },
+        { href: "/admin/media",    label: "Media",    icon: "Images"   },
+        { href: "/admin/bookings", label: "Bookings", icon: "Mail"     },
+        { href: "/admin/content",  label: "Content",  icon: "FileText" },
       ],
     },
     {
-      label: "Team",
+      label: "Business",
       items: [
-        { href: "/admin/customers", label: "Customers", icon: "Users"      },
-        { href: "/admin/managers",  label: "Managers",  icon: "UsersRound" },
-        { href: "/admin/activity",  label: "Activity",  icon: "Activity"   },
+        { href: "/admin/payments",  label: "Payments",  icon: "CreditCard" },
+        { href: "/admin/marketing", label: "Marketing", icon: "Megaphone"  },
+        { href: "/admin/team",      label: "Team",      icon: "Users"      },
       ],
     },
   ],
