@@ -92,6 +92,25 @@ Phase 2 / worth naming now, not launch-blocking:
 - [x] Admin manages both from the same Events page (category selector added)
 - [x] Public `/harinam` page built, `/events` filtered to exclude Harinam sessions — verified live, no duplication
 
+## Bookings — audit findings (2026-07-21)
+
+Current flow: contact-form inquiry → free-text fields → staff email notification → admin flips a status dropdown. Compared to purpose-built booking tools for performers (HoneyBook, Dubsado, Calendly):
+
+- [ ] **Structured event date/venue/type** — `eventDetails` is a single free-text textarea (placeholder "Date, venue, type of event…"); the date isn't real data, so the admin table can't be sorted chronologically or checked for conflicts. Add a real date picker, a venue field, and an event-type dropdown (Kirtan evening / Private function / Wedding / Festival / Other).
+- [ ] **Reply from the app** — the only action on an inquiry today is changing its status; there's no way to respond without leaving the admin panel and emailing manually. Should be the core loop, not missing entirely.
+- [ ] **Auto-acknowledgment email to the inquirer** — `submitInquiry` notifies staff but sends nothing back to the person who submitted the form. Simple "we got it, we'll respond within 48 hours" auto-reply, reusing the existing mail service.
+- [ ] **Conflict visibility** — once dates are structured, sort/group CONFIRMED bookings chronologically so a new inquiry's date can be checked against ones already confirmed (no need for a full calendar widget).
+- [ ] **Private internal notes field** — admin-only notes per inquiry ("spoke to them, waiting on deposit"), separate from anything customer-facing.
+
+## Gallery — audit findings (2026-07-21)
+
+- [ ] **Real accessibility/performance bug** — every image (public grid, admin manager, Lightbox thumbnails) is a CSS `background-image` div, not an `<img>` tag: zero alt text for screen readers, no native lazy-loading. Fix regardless of any other gallery work.
+- [ ] **No albums/events grouping** — all photos live in one flat list despite the Events/Harinam model already existing. Tag photos by event (e.g. "Harinam, March 2026" as its own sub-gallery) — a tagging problem, not a new subsystem.
+- [ ] **Upload and reorder are one-at-a-time** — `TrackStudio` (Music) already has the right pattern for this exact problem: multi-file bulk upload with real progress bars, native drag-and-drop reorder. Gallery still does single-file upload and up/down-arrow-click reordering; reuse the existing pattern instead of the worse one.
+- [ ] **Uniform square grid instead of masonry** — every photo forced into a 1:1 crop; event photography naturally mixes portrait/landscape, and a masonry layout (preserving real aspect ratio) reads far more premium for this content.
+- [ ] **No swipe gestures in the Lightbox** — keyboard arrows and click targets work, but no touch-swipe handling; feels broken on a phone, which is probably the dominant device for browsing a photo gallery.
+- [ ] **No download/share on the Lightbox** — worth treating as a growth lever, not just a gap: fans sharing photos of themselves at a Harinam session is free promotion.
+
 ## Anti-piracy / security — done
 
 - [x] Single-device session enforcement — `/sessions/claim` + `/sessions/check`, polled every 5s while playing; verified live (second device claiming the account stops the first device's playback with a dismissible message, replaying re-claims)
