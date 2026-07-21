@@ -4,6 +4,7 @@ import https from "node:https";
 import { prisma } from "@repo/database";
 import { HttpStatus } from "@repo/types";
 import { AuthService } from "./auth.service.js";
+import { setAuthCookie, setRoleCookie } from "../../utils/cookie.util.js";
 import env from "../../config/env.config.js";
 
 // Force IPv4 — WSL2 Happy Eyeballs times out on IPv6 for Google APIs
@@ -166,6 +167,13 @@ export async function googleCallback(req: Request, res: Response) {
 
     const jwt = authService.generateToken(user.id, user.role);
     const rolePath = ROLE_ROUTES[user.role] ?? "/";
+
+    // Must set the cookie here too, not just hand the token to /oauth/callback
+    // for localStorage — the API's `protect` middleware prefers the cookie over
+    // the Authorization header, so a stale cookie from an earlier session would
+    // otherwise silently outrank this fresh login on every subsequent request.
+    setAuthCookie(res, jwt);
+    setRoleCookie(res, user.role);
 
     res.redirect(
       `${env.FRONTEND_URL}/oauth/callback?token=${jwt}&to=${encodeURIComponent(rolePath)}`

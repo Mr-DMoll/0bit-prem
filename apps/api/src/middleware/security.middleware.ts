@@ -1,10 +1,16 @@
 import rateLimit from "express-rate-limit";
 import { HttpStatus } from "@repo/types";
 
-// Brute-force protection for /login and /register — 20 attempts per 15 minutes per IP
+const isProduction = process.env.NODE_ENV === "production";
+
+// Brute-force protection for /login, /register, and the Google OAuth routes —
+// 20 attempts per 15 minutes per IP in production. Relaxed (effectively off)
+// outside production so repeated manual testing doesn't get locked out —
+// this is environment-driven on purpose, so there's nothing to remember to
+// re-tighten before launch.
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: isProduction ? 20 : 1000,
   message: { status: "fail", message: "Too many attempts from this IP, please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
