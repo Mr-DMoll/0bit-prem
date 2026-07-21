@@ -6,7 +6,7 @@ import { endpoints } from "@/api/endpoints";
 const R2_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 export const uploadsService = {
-  async upload(file: File, folder: "albums" | "tracks" | "events" | "gallery" | "products"): Promise<string> {
+  async upload(file: File, folder: "albums" | "tracks" | "events" | "gallery" | "products" | "content"): Promise<string> {
     const { data } = await apiClient.post(endpoints.adminUploads.presign, {
       filename: file.name,
       contentType: file.type,
@@ -28,7 +28,7 @@ export const uploadsService = {
   // XHR (not fetch) specifically to get upload.onprogress events for a progress bar.
   async uploadWithProgress(
     file: File,
-    folder: "albums" | "tracks" | "events" | "gallery" | "products",
+    folder: "albums" | "tracks" | "events" | "gallery" | "products" | "content",
     onProgress: (percent: number) => void
   ): Promise<string> {
     const { data } = await apiClient.post(endpoints.adminUploads.presign, {

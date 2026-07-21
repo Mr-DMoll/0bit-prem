@@ -13,7 +13,7 @@ import { getPresignedUploadUrl, uploadObject } from "../../services/s3.service.j
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-const ALLOWED_FOLDERS = ["albums", "tracks", "events", "gallery", "products"];
+const ALLOWED_FOLDERS = ["albums", "tracks", "events", "gallery", "products", "content"];
 
 function sanitizeFilename(filename: string): string {
   return filename.toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "");
