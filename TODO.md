@@ -86,16 +86,18 @@ Phase 2 / worth naming now, not launch-blocking:
 - [x] Public About page reads real content
 - [x] Public Contact page shows real email/phone/socials alongside the booking form
 
-## Content page (About/Harinam/Sanctum/Contact) — audit findings (2026-07-21)
+## Content page (About/Harinam/Sanctum/Contact) — rebuilt (2026-07-21)
 
-- [ ] **"Save changes" saves all six fields, not just the active tab** — `handleSave` PATCHes every key (`about_bio`, `harinam_intro`, `sanctum_quote`, `contact_email`, `contact_phone`, `contact_socials`) regardless of which tab is open or what actually changed. Real clobber risk: editing "About" in one session can silently overwrite "Contact" back to a stale in-memory value if it was changed elsewhere since this page loaded. Should only save what actually changed.
-- [ ] **No unsaved-changes warning** — navigate away after editing without hitting Save and the edit is just gone, no prompt.
-- [ ] **No per-tab dirty indicator** — one global "Saved" checkmark; no way to see at a glance which tab has pending edits.
-- [ ] **No "last saved" timestamp or version history** — `SystemSetting.updatedAt` already exists per key in the schema, just isn't surfaced. No undo if a save overwrites something by mistake.
-- [ ] **Social links are free text, not structured — and render as literal text on the public Contact page, not clickable links.** The socials field is one textarea (e.g. "Instagram: @premvkay, YouTube: /premvkay"); a visitor can't tap through, they'd have to copy the handle and search for it themselves. Should be structured per-platform fields (Instagram/YouTube/Facebook/etc., each a real URL) rendered as actual icon links. Single most "unprofessional-looking" gap on the page since it's the content fans are most likely to act on.
-- [ ] **Markdown editor has no image insertion** — toolbar has Bold/Italic/Heading/Bullet/Numbered/Quote/Link but no "insert image," even though the public renderer (`marked`) already supports markdown image syntax and would render one correctly. Bios/Harinam intro would genuinely benefit from a photo; not realistic to expect hand-typed markdown image syntax with a pre-hosted URL from a non-technical owner.
-- [ ] **No "view live" link** — no quick way to jump to the actual public page after editing to see the change in context.
-- [ ] Sanctum tab is currently just a single quote field — design this together with the "feature an album on Sanctum" item already tracked above (both are "what does the owner control about the homepage"), not as two separate efforts.
+Audit findings from earlier the same day, all addressed:
+
+- [x] **Save now only sends changed fields** — dirty-key tracking (`Set<keyof ContentMap>`) means `handleSave` only PATCHes fields actually touched since load, across however many tabs, eliminating the stale-data clobber risk. Button label shows the pending count ("Save changes (2)").
+- [x] **Per-tab dirty indicator** — a small dot on any tab with unsaved edits.
+- [x] **Unsaved-changes warning** — `beforeunload` guard covers tab close/refresh/typing a new URL. Note: doesn't intercept in-app SPA navigation (clicking a different sidebar link) — that would need wrapping Next's router directly; scoped out as lower-value than the tab-close case.
+- [x] **Last-saved timestamp + one-level revert** — `SystemSetting` gained a `previousValue` column; every save stores the prior value, a new `POST /admin/content/:key/revert` endpoint swaps back. Not full version history, but covers "I overwrote this by mistake."
+- [x] **Structured, clickable social links** — replaced the single free-text `contact_socials` field with five real fields (Instagram/YouTube/Facebook/X/Website), each rendered as a clickable icon link on the public Contact page (custom inline SVG brand marks in `shared/components/SocialIcons.tsx`, since lucide-react dropped brand icons a few versions back).
+- [x] **Markdown editor image insertion** — new toolbar button uploads via the existing presigned-upload flow (`content` added to the allowed folder list) and inserts `![](url)` at the cursor.
+- [x] **"View live" link** — jumps to the actual public page for whichever tab is open.
+- [ ] Sanctum tab is still just a single quote field — still worth designing together with the "feature an album on Sanctum" item tracked above, deliberately not done in this pass since that feature doesn't exist yet.
 
 ## Harinam — done
 
@@ -103,24 +105,46 @@ Phase 2 / worth naming now, not launch-blocking:
 - [x] Admin manages both from the same Events page (category selector added)
 - [x] Public `/harinam` page built, `/events` filtered to exclude Harinam sessions — verified live, no duplication
 
-## Bookings — audit findings (2026-07-21)
+## Bookings — rebuilt (2026-07-21)
 
-Current flow: contact-form inquiry → free-text fields → staff email notification → admin flips a status dropdown. Compared to purpose-built booking tools for performers (HoneyBook, Dubsado, Calendly):
+Audit findings from earlier the same day, all addressed:
 
-- [ ] **Structured event date/venue/type** — `eventDetails` is a single free-text textarea (placeholder "Date, venue, type of event…"); the date isn't real data, so the admin table can't be sorted chronologically or checked for conflicts. Add a real date picker, a venue field, and an event-type dropdown (Kirtan evening / Private function / Wedding / Festival / Other).
-- [ ] **Reply from the app** — the only action on an inquiry today is changing its status; there's no way to respond without leaving the admin panel and emailing manually. Should be the core loop, not missing entirely.
-- [ ] **Auto-acknowledgment email to the inquirer** — `submitInquiry` notifies staff but sends nothing back to the person who submitted the form. Simple "we got it, we'll respond within 48 hours" auto-reply, reusing the existing mail service.
-- [ ] **Conflict visibility** — once dates are structured, sort/group CONFIRMED bookings chronologically so a new inquiry's date can be checked against ones already confirmed (no need for a full calendar widget).
-- [ ] **Private internal notes field** — admin-only notes per inquiry ("spoke to them, waiting on deposit"), separate from anything customer-facing.
+- [x] **Structured event date/venue/type** — new event-type list (originally a fixed `BookingEventType` enum, later made owner-editable — see follow-up round below) plus real `eventDate`/`venue` columns on `BookingInquiry`. Public Contact form has a real date picker, venue field, and type dropdown; `eventDetails` demoted to an optional "additional details" field. Legacy rows with no structured data degrade gracefully (show "—" instead of breaking).
+- [x] **Reply from the app** — new `BookingReply` model + `POST /admin/bookings/:id/reply`; admin can type a reply in the expanded row, it emails the inquirer directly and the thread is visible going forward. Sending a reply auto-advances status out of NEW into CONTACTED.
+- [x] **Auto-acknowledgment email to the inquirer** — `submitInquiry` now also sends a plain "we got it, we'll respond within 48 hours" email to whoever submitted the form, alongside the existing staff notification.
+- [x] **Conflict visibility** — table has a sort toggle (received vs. event date) plus an inline "⚠ conflict" flag on any non-confirmed inquiry whose date matches an already-CONFIRMED booking. Verified live: confirming one inquiry and submitting a second with the same date correctly flagged the conflict.
+- [x] **Private internal notes field** — per-inquiry notes textarea in the expanded row, staff-only, persisted server-side (verified surviving a hard reload).
+- Also fixed in passing: the Overview page's "Needs attention" feed built its booking subLabel from the now-optional `eventDetails` field — would have shown blank for new structured-only entries. Now builds a proper "Wedding, 20 Dec 2026, City Hall"-style label from the structured fields, falling back to `eventDetails` for legacy rows.
 
-## Gallery — audit findings (2026-07-21)
+### Bookings follow-up round (2026-07-21, later same day)
 
-- [ ] **Real accessibility/performance bug** — every image (public grid, admin manager, Lightbox thumbnails) is a CSS `background-image` div, not an `<img>` tag: zero alt text for screen readers, no native lazy-loading. Fix regardless of any other gallery work.
-- [ ] **No albums/events grouping** — all photos live in one flat list despite the Events/Harinam model already existing. Tag photos by event (e.g. "Harinam, March 2026" as its own sub-gallery) — a tagging problem, not a new subsystem.
-- [ ] **Upload and reorder are one-at-a-time** — `TrackStudio` (Music) already has the right pattern for this exact problem: multi-file bulk upload with real progress bars, native drag-and-drop reorder. Gallery still does single-file upload and up/down-arrow-click reordering; reuse the existing pattern instead of the worse one.
-- [ ] **Uniform square grid instead of masonry** — every photo forced into a 1:1 crop; event photography naturally mixes portrait/landscape, and a masonry layout (preserving real aspect ratio) reads far more premium for this content.
-- [ ] **No swipe gestures in the Lightbox** — keyboard arrows and click targets work, but no touch-swipe handling; feels broken on a phone, which is probably the dominant device for browsing a photo gallery.
-- [ ] **No download/share on the Lightbox** — worth treating as a growth lever, not just a gap: fans sharing photos of themselves at a Harinam session is free promotion.
+- [x] **Reply email confirmed delivering** — verified via a direct Resend API test (bypassing the UI) that `sendBookingReplyEmail` sends successfully and shows `last_event: "delivered"`. If a real reply doesn't show up in the inquirer's inbox, it's very likely landing in Spam (same root cause as the earlier invite-email issue — sender domain still building reputation with Gmail), not a code bug.
+- [x] **Booking submission now requires Google sign-in** — `POST /bookings` moved behind `protect`; `email` is now taken from the authenticated session (`req.user.email`) instead of a free-text field, so it's no longer possible to submit a wrong/mistyped email. Public Contact page shows a "Sign in to submit an inquiry" prompt (same Google button used everywhere else) when logged out, and locks the email field to the signed-in account when logged in. Name is prefilled from the account but stays editable.
+- [x] **Event-date field UX** — clicking anywhere in the date field now opens the native picker (`input.showPicker()` on click), not just the small calendar icon; the icon itself now follows the site's light/dark theme (`colorScheme` tied to `useTheme()`) instead of always rendering dark.
+- [x] **Booking Settings tab (v1: fixed list, toggle only)** — new "Settings" tab on the admin Bookings page let the owner enable/disable which of 5 fixed event types were offered. Backed by `SystemSetting`. Superseded same day by the fully owner-editable version below once the owner asked to add custom types (e.g. Harinam) rather than just toggle a fixed list.
+- Verified live end-to-end: submitted a real inquiry while signed in (email correctly matched the session, not a spoofable field); toggled Wedding off in Settings and confirmed it disappeared from the public dropdown, then re-enabled it; confirmed `colorScheme`/`showPicker` wiring on the date input via devtools. Test inquiry cleaned up afterward.
+
+### Booking event types made fully owner-editable (2026-07-21, third round)
+
+The fixed 5-value enum wasn't enough — the owner wanted to add their own types (e.g. "Harinam") outright, not just toggle a preset list.
+
+- [x] **Schema change** — dropped the `BookingEventType` Postgres enum entirely. `BookingInquiry.eventType` is now a plain `String?`, storing the label text as it read at submission time (so renaming/deleting a type later never rewrites history). New `BookingEventTypeOption` model (`id`, `label`, `isEnabled`, `order`) replaces the `SystemSetting`-based toggle. One real historical row ("Katlego" / Wedding) was remapped from the old enum value to its human-readable label during the migration; the 5 original types were seeded into the new table so nothing visibly changed for existing users.
+- [x] **Full CRUD API** — `GET/POST /admin/bookings/event-types`, `PATCH/DELETE /admin/bookings/event-types/:id`. Duplicate labels (case-insensitive) rejected; at least one type must always stay enabled (blocks both disabling and deleting the last one). Public `GET /bookings/event-types` returns only enabled labels, in order; `submitInquiry` validates the submitted label against that same live list.
+- [x] **Admin Settings tab rebuilt** — each row now has an enable/disable checkbox, inline rename (pencil icon → text field → save/cancel), and delete (trash icon) with an in-app inline confirm — not `window.confirm`, which hangs entirely under browser automation and doesn't match the rest of the app's custom-modal style. Plus an "Add event type" field at the bottom. Every action saves immediately (no separate Save-settings step, since add/rename/delete are already discrete server calls).
+- [x] **Public Contact form + admin table simplified** — dropdown now renders whatever labels the owner has configured directly (no more mapping through a fixed union type); admin Bookings table shows `eventType` as plain text.
+- Verified live end-to-end: added "Harinam" as a brand-new type, confirmed it appeared on the public form immediately; renamed "Other" → "Special Occasion" and confirmed the rename propagated to the public form; deleted the test "Harinam" entry via the new inline confirm (no hang, unlike the old `window.confirm`); confirmed the historical "Katlego / Wedding" inquiry still displays correctly as plain text after the migration. Test additions/renames reverted back to the original 5 defaults afterward.
+
+## Gallery — rebuilt (2026-07-21)
+
+Audit findings from earlier the same day, all addressed in one pass, modeled on a reference design the client provided (albums sidebar, search, select-mode bulk actions, drag-drop multi-upload, hover controls):
+
+- [x] **Real accessibility/performance bug fixed** — public grid, admin manager, and Lightbox thumbnails all now render real `<img>` tags with `alt` text (caption, or a sensible fallback) and `loading="lazy"`, replacing the old CSS `background-image` divs.
+- [x] **Albums** — new lightweight `GalleryAlbum` model (freeform named collections, not tied to the Event calendar — matches the client's reference design, which showed generic names like "Kirtan Nights" rather than dated events). Photos with no album fall into "Uncategorized." Full CRUD, sidebar with live counts, filter-by-album on both admin and public Gallery pages.
+- [x] **Bulk upload + native drag-reorder** — drag-and-drop multi-file upload zone (reuses the existing presigned-upload pattern from Music), real per-file progress bars, and native drag-and-drop reordering (same pattern as `TrackStudio`), replacing one-at-a-time upload and up/down-arrow clicks.
+- [x] **Masonry layout** — CSS column-based masonry on both admin and public grids; photos keep their real aspect ratio instead of being forced into 1:1 crops.
+- [x] **Select-mode bulk actions** — bulk move-to-album and bulk delete, in addition to per-photo edit (caption + album) and delete.
+- [x] **Lightbox: swipe gestures + download/share** — touch swipe navigation, a download button (fetches as a blob so it forces a real download regardless of cross-origin headers), and a share button (native share sheet on mobile, clipboard-copy fallback on desktop).
+- [ ] **Follow-up gap found during build, not yet addressed**: albums can be created and filtered, but there's no UI to rename or delete an album from the sidebar yet (the API supports both — `PATCH`/`DELETE /admin/gallery/albums/:id` — just no button wired up). Small, worth doing as a fast-follow.
 
 ## Anti-piracy / security — done
 
