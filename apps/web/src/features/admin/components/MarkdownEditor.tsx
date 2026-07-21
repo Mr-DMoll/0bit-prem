@@ -94,7 +94,7 @@ export default function MarkdownEditor({ value, onChange, minHeight = "220px", p
       </div>
 
       <div style={{ display: "flex", alignItems: "stretch" }}>
-        <div style={{ flex: 1, minWidth: 0, borderRight: "1px solid var(--color-border)" }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", borderRight: "1px solid var(--color-border)" }}>
           <div style={paneLabelStyle}>Markdown</div>
           <textarea
             ref={textareaRef}
@@ -102,18 +102,18 @@ export default function MarkdownEditor({ value, onChange, minHeight = "220px", p
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             style={{
-              width: "100%", minHeight, padding: "14px", border: "none", outline: "none",
+              flex: 1, width: "100%", minHeight, padding: "14px", border: "none", outline: "none",
               resize: "vertical", fontSize: "14px", lineHeight: 1.6, fontFamily: "inherit",
               color: "var(--color-text-primary)", background: "var(--color-card-bg)", boxSizing: "border-box",
               display: "block",
             }}
           />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={paneLabelStyle}>Preview</div>
           <div
             className="pk-markdown"
-            style={{ minHeight, maxHeight: "60vh", overflowY: "auto", padding: "14px", fontSize: "14px", color: "var(--color-text-secondary)", boxSizing: "border-box" }}
+            style={{ flex: 1, minHeight, maxHeight: "60vh", overflowY: "auto", padding: "14px", fontSize: "14px", color: "var(--color-text-secondary)", boxSizing: "border-box" }}
             dangerouslySetInnerHTML={{
               __html: value
                 ? (marked.parse(value, { async: false }) as string)
