@@ -40,6 +40,24 @@ Legend: `[x]` done & verified live · `[~]` partial / in progress · `[ ]` not s
 - [x] Shared Orders/fulfillment view used by both Admin and Manager (`/merch-orders` API, `[ADMIN, MANAGER]`)
 - [x] Public: browse, product detail, real cart (localStorage-persisted), checkout with shipping form
 - [x] Verified end-to-end live: real product created, cart survived login, order placed, DB rows + stock decrement confirmed, both Admin and Manager see and can fulfill the same order
+- [x] Sidebar/nav label: "Merch" → "Shop" (customer-facing `publicNav.config.ts`)
+
+## Shop — pre-launch checklist (must resolve before go-live)
+
+From a full api-to-web audit of the shop/checkout flow (2026-07-21), ahead of connecting PayFast.
+
+- [ ] **Stock race condition** — `checkout` in `merch.controller.ts` reads `variant.stock` *before* the transaction, then decrements inside it with no re-check at decrement time. Two concurrent checkouts on the last unit can both pass and both decrement, oversetting. Fix: conditional update (`WHERE stock >= quantity`) inside the transaction, or serializable isolation.
+- [ ] **Order confirmation + staff notification emails** — nothing fires today when an order is placed (mail.service.ts has invite/password-reset/booking-notification/verification-code emails, but no order receipt). Customer should get a receipt; staff should get notified the way booking inquiries already are.
+- [ ] **Checkout → Google login loses the customer's place** — `cart/page.tsx`'s "Place Order" sends unauthenticated users through `/auth/google` with no return path; `googleCallback` always lands on `ROLE_ROUTES[role]` (homepage), not back at `/merch/cart`. Needs a `redirect`/`return_to` param threaded through the OAuth round trip.
+- [ ] **"Merch" → "Shop" in the admin dashboard too** — customer-facing nav is done, but the admin sidebar link, the `MerchPage.tsx` h1, and the public product-detail page's `PageHeader`/breadcrumb (`[productId]/page.tsx`) still say "Merch."
+- [ ] **Remove the password-reset flow entirely** — `/forgot-password`, `/reset-password` pages, their API endpoints, and `sendPasswordResetEmail` in mail.service.ts. Everyone but Super Admin is Google-only already; Super Admin's own login page is the only place `/forgot-password` is even linked from. Tradeoff to accept: if Super Admin ever forgets their password, recovery is a direct DB/script intervention (same as the original seed), not a self-service email flow.
+- [ ] **Best-in-class product gallery/thumbnails** — current image gallery (`[productId]/page.tsx`) works (main image + thumbnail strip) but should be upgraded to match top-tier ecommerce product pages (larger primary image, smoother thumbnail interaction, possibly zoom/lightbox).
+- [ ] **Delivery tracking** — physical merch is shipped; need to track whether an order has actually been delivered, not just "Fulfilled." Likely a schema change: either extend `OrderStatus` (e.g. add `SHIPPED`/`DELIVERED`) or add a `deliveredAt` timestamp + optional tracking number field, surfaced in both the admin Orders view and the customer's My Orders tab.
+
+Open decisions (not broken, but worth an explicit yes/no before launch):
+- [ ] Guest checkout vs. account-required — currently account (Google) required before ordering.
+- [ ] Shipping cost — currently no separate line item; total is just sum of item prices. Confirm this is intentional (built into pricing) vs. needing its own field.
+- [ ] Discount/promo codes, product reviews, catalog search/sort — all currently absent; likely fine until the catalog grows past a page or two, but flagging so it's a deliberate call, not an oversight.
 
 ## Account page — done
 
@@ -68,11 +86,13 @@ Legend: `[x]` done & verified live · `[~]` partial / in progress · `[ ]` not s
 - [ ] PayFast sandbox credentials in `.env` (not present yet)
 - [ ] ITN webhook handling
 
-## Auth / accounts — needs attention
+## Auth / accounts — done
 
-- [ ] **`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` in `.env` are still placeholder values** — real Google sign-in cannot work at all right now, code is wired but has no real credentials
-- [ ] Once real credentials are added, verify the full Google OAuth flow end-to-end (only tested with email/password test accounts so far)
-- [ ] Confirm the Super Admin → Admin bootstrap flow still works as documented (untouched since the template's own setup)
+- [x] Real Google OAuth credentials in `.env`, full flow verified live for both new and existing accounts
+- [x] Single public "Continue with Google" button for everyone — customers auto-create as `USER`; invited `ADMIN`/`MANAGER` accounts land in their own dashboard on first login, `PENDING → ACTIVE` flips automatically
+- [x] `/staff-login` removed entirely (along with the whole password-set-on-invite flow); Super Admin now signs in at a private, unlisted route (`/console-0726`) with a plain password form, not linked from anywhere in the UI
+- [x] Password login hard-restricted to `SUPER_ADMIN` at the API level — verified a valid password hash on a non-super-admin account is still rejected
+- [ ] Remove the password-reset flow entirely (see Shop checklist above — same task, listed there since it came up during that audit)
 
 ## Listener UI polish pass — done
 
