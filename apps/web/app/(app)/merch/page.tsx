@@ -5,6 +5,7 @@ import Link from "next/link";
 import PageHeader from "@/features/public/PageHeader";
 import { useCart } from "@/features/public/CartContext";
 import { publicMerchService, type PublicProduct, type ProductCategory } from "@/features/public/services/merch.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 function priceRange(product: PublicProduct) {
   const prices = product.variants.map((v) => v.priceCents);
@@ -79,7 +80,7 @@ export default function MerchPage() {
               <div>
                 <div style={{
                   aspectRatio: "1", borderRadius: "var(--radius-lg)",
-                  background: product.images[0] ? `url(${product.images[0]}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+                  background: product.images[0] ? optimizedBackground(product.images[0], 640) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
                   border: "1px solid var(--color-card-border)", marginBottom: "10px",
                 }} />
                 <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "var(--color-text-primary)" }}>{product.name}</p>

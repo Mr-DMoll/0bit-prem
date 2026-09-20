@@ -6,6 +6,7 @@ import {
   listOrders, updateOrderStatus,
 } from "./merch.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
+import { publicCache } from "../../middleware/cache.middleware.js";
 import { authorize } from "../../middleware/role.middleware.js";
 import { Role } from "@repo/types";
 
@@ -25,7 +26,7 @@ adminMerchRouter.delete("/variants/:id",       adminDeleteVariant);
 
 // Mounted at /merch — public browsing + checkout.
 export const publicMerchRouter = Router();
-publicMerchRouter.get("/products",     listProducts);
+publicMerchRouter.get("/products",     publicCache(), listProducts);
 publicMerchRouter.get("/my-orders",    protect, getMyOrders);
 publicMerchRouter.get("/products/:id", getProduct);
 publicMerchRouter.post("/checkout",    protect, checkout);

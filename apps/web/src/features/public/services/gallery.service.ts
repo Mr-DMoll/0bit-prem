@@ -1,5 +1,6 @@
 import apiClient from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { cachedGet } from "@/api/cache";
 
 export interface PublicGalleryAlbum {
   id: string;
@@ -19,7 +20,6 @@ export interface PublicGalleryImage {
 
 export const publicGalleryService = {
   async getImages(): Promise<{ data: { images: PublicGalleryImage[]; albums: PublicGalleryAlbum[] } }> {
-    const { data } = await apiClient.get(endpoints.gallery.list);
-    return data;
+    return cachedGet("gallery", async () => (await apiClient.get(endpoints.gallery.list)).data);
   },
 };

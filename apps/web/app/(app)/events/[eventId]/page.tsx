@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import PageHeader from "@/features/public/PageHeader";
 import { publicEventsService, type PublicEvent } from "@/features/public/services/events.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 export default function EventDetailPage({ params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = use(params);
@@ -33,7 +34,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ eventId:
       <div style={{ display: "flex", gap: "32px", flexWrap: "wrap", maxWidth: "1000px" }}>
         <div style={{
           width: "100%", maxWidth: "460px", aspectRatio: "3/2", borderRadius: "var(--radius-lg)", flexShrink: 0,
-          background: event.imageUrl ? `url(${event.imageUrl}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+          background: event.imageUrl ? optimizedBackground(event.imageUrl, 1080) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
           border: "1px solid var(--color-card-border)",
         }} />
 

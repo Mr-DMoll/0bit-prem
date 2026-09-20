@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import PageHeader from "@/features/public/PageHeader";
 import { publicMusicService, type PublicAlbum } from "@/features/public/services/music.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 export default function MusicPage() {
   const [albums, setAlbums]       = useState<PublicAlbum[]>([]);
@@ -35,7 +36,7 @@ export default function MusicPage() {
                   aspectRatio: "1",
                   borderRadius: "var(--radius-lg)",
                   background: album.coverImageUrl
-                    ? `url(${album.coverImageUrl}) center/cover`
+                    ? optimizedBackground(album.coverImageUrl, 640)
                     : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
                   border: "1px solid var(--color-card-border)",
                   marginBottom: "10px",

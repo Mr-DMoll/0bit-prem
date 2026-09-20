@@ -1,5 +1,6 @@
 import apiClient from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { cachedGet } from "@/api/cache";
 
 export interface PublicContent {
   about_bio: string;
@@ -16,7 +17,6 @@ export interface PublicContent {
 
 export const publicContentService = {
   async getContent(): Promise<{ data: { content: PublicContent } }> {
-    const { data } = await apiClient.get(endpoints.content.get);
-    return data;
+    return cachedGet("content", async () => (await apiClient.get(endpoints.content.get)).data);
   },
 };

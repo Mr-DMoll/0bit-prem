@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/features/public/PageHeader";
 import { useCart } from "@/features/public/CartContext";
 import { publicMerchService, type PublicProduct, type PublicVariant, type ProductCategory } from "@/features/public/services/merch.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = { APPAREL: "Apparel", ACCESSORIES: "Accessories", BOOKS: "Books" };
 
@@ -28,7 +29,7 @@ function RelatedProducts({ products }: { products: PublicProduct[] }) {
           <Link key={p.id} href={`/merch/${p.id}`} style={{ textDecoration: "none" }}>
             <div style={{
               aspectRatio: "1", borderRadius: "var(--radius-lg)",
-              background: p.images[0] ? `url(${p.images[0]}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+              background: p.images[0] ? optimizedBackground(p.images[0], 384) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
               border: "1px solid var(--color-card-border)", marginBottom: "8px",
             }} />
             <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--color-text-primary)" }}>{p.name}</p>
@@ -102,7 +103,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ produc
         <div style={{ width: "380px", flexShrink: 0 }}>
           <div style={{
             aspectRatio: "1", borderRadius: "var(--radius-lg)", width: "100%",
-            background: images[activeImage] ? `url(${images[activeImage]}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+            background: images[activeImage] ? optimizedBackground(images[activeImage], 1080) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
             border: "1px solid var(--color-card-border)", marginBottom: "12px",
           }} />
           {images.length > 1 && (
@@ -113,7 +114,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ produc
                   onClick={() => setActiveImage(i)}
                   style={{
                     width: "60px", height: "60px", borderRadius: "var(--radius-md)", padding: 0, cursor: "pointer",
-                    background: img ? `url(${img}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+                    background: img ? optimizedBackground(img, 128) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
                     border: activeImage === i ? "2px solid var(--color-accent)" : "1px solid var(--color-card-border)",
                   }}
                 />

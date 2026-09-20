@@ -6,6 +6,7 @@ import {
   listImages,
 } from "./gallery.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
+import { publicCache } from "../../middleware/cache.middleware.js";
 import { authorize } from "../../middleware/role.middleware.js";
 import { Role } from "@repo/types";
 
@@ -30,4 +31,4 @@ adminGalleryRouter.patch("/:id",  adminUpdateImage);
 adminGalleryRouter.delete("/:id", adminDeleteImage);
 
 export const publicGalleryRouter = Router();
-publicGalleryRouter.get("/", listImages);
+publicGalleryRouter.get("/", publicCache(), listImages);

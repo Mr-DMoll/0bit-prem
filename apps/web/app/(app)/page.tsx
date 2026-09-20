@@ -144,9 +144,13 @@ export default function SanctumPage() {
           </div>
 
           <div style={{ position: "absolute", bottom: "18%", left: 0, right: 0, textAlign: "center" }}>
-            <span style={{ fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.22)" }}>
-              {nowPlaying ? (playing ? "playing" : "paused") : hasQueue ? "tap to enter" : "quiet, for now"}
-            </span>
+            {!nowPlaying && hasQueue ? (
+              <span className="pk-tap-cta">tap to enter</span>
+            ) : (
+              <span style={{ fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.22)" }}>
+                {nowPlaying ? (playing ? "playing" : "paused") : "quiet, for now"}
+              </span>
+            )}
           </div>
         </div>
 

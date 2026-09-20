@@ -1,5 +1,6 @@
 import apiClient from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { cachedGet } from "@/api/cache";
 
 export interface PublicAlbum {
   id: string;
@@ -40,8 +41,7 @@ export interface MyAlbumPurchase {
 
 export const publicMusicService = {
   async getAlbums(): Promise<{ data: { albums: PublicAlbum[] } }> {
-    const { data } = await apiClient.get(endpoints.music.albums);
-    return data;
+    return cachedGet("albums", async () => (await apiClient.get(endpoints.music.albums)).data);
   },
 
   async getMyAlbums(): Promise<{ data: { purchases: MyAlbumPurchase[] } }> {

@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext, useRef, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { useAuth } from "@/shared/context/AuthContext";
 import { sessionsService, getDeviceId } from "./services/sessions.service";
 import type { PublicTrack } from "./services/music.service";
+import { optimizedImage } from "@/shared/utils/image";
 
 export interface NowPlaying {
   track: PublicTrack;
@@ -20,8 +21,6 @@ interface MusicPlayerContextType {
   isPlaying: boolean;
   isBuffering: boolean;
   kickedOut: boolean;
-  currentTime: number;
-  duration: number;
   queue: PublicTrack[];
   hasNext: boolean;
   hasPrevious: boolean;
@@ -47,9 +46,16 @@ const VOLUME_STORAGE_KEY = "pk_volume";
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
+// Playback position lives in its own context. The <audio> element fires timeupdate
+// ~4x/second; if that state sat in the main context, every component that reads the
+// player (sidebar, pages, track lists) would re-render 4x/second for as long as
+// music plays. Only the progress bar needs it.
+const MusicPlayerTimeContext = createContext<{ currentTime: number; duration: number }>({ currentTime: 0, duration: 0 });
+
 export function MusicPlayerProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const preloadRef = useRef<{ el: HTMLAudioElement; url: string } | null>(null);
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
   const [isPlaying, setIsPlaying]   = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
@@ -226,6 +232,98 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     play(prev, prev.albumTitle ?? queueAlbum.title, prev.albumCoverUrl ?? queueAlbum.coverUrl, queue);
   }, [hasPrevious, queue, queueIndex, queueAlbum, play]);
 
+  // Warm the next track a few seconds after this one starts, so skipping (or the
+  // track ending) doesn't stall on a cold network fetch. Delayed so it never competes
+  // with the current track's own buffering.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !nowPlaying || queue.length === 0) return;
+    // Respect the browser's Data Saver setting — a full track is ~8 MB.
+    if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+    const nextIdx = queueIndex + 1 < queue.length ? queueIndex + 1 : repeatMode === "all" ? 0 : -1;
+    const next = nextIdx >= 0 ? queue[nextIdx] : null;
+    if (!next?.audioUrl || next.isLocked || next.id === nowPlaying.track.id) return;
+    const url = next.audioUrl;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (preloadRef.current?.url === url) return;
+        const el = preloadRef.current?.el ?? new Audio();
+        el.preload = "auto";
+        el.src = url;
+        preloadRef.current = { el, url };
+      }, 4000);
+    };
+    audio.addEventListener("playing", arm);
+    if (!audio.paused) arm();
+    return () => {
+      clearTimeout(timer);
+      audio.removeEventListener("playing", arm);
+    };
+  }, [nowPlaying, queue, queueIndex, repeatMode]);
+
+  // OS-level media controls: lock-screen / notification / headset buttons / the
+  // browser's media hub. Without this a phone shows no artwork or controls and the
+  // hardware play/pause and next/previous keys do nothing.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator) || !nowPlaying) return;
+    const { track, albumTitle, albumCoverUrl } = nowPlaying;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title,
+      artist: "Premvkay",
+      album: albumTitle,
+      artwork: albumCoverUrl
+        ? [{ src: new URL(optimizedImage(albumCoverUrl, 640), window.location.href).href, sizes: "640x640" }]
+        : [],
+    });
+  }, [nowPlaying]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState = nowPlaying ? (isPlaying ? "playing" : "paused") : "none";
+  }, [isPlaying, nowPlaying]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator) || !nowPlaying) return;
+    const ms = navigator.mediaSession;
+    const audio = audioRef.current;
+    const set = (action: MediaSessionAction, handler: MediaSessionActionHandler | null) => {
+      try { ms.setActionHandler(action, handler); } catch { /* action unsupported on this browser */ }
+    };
+    set("play", () => { if (audio) safePlay(audio); });
+    set("pause", () => audio?.pause());
+    set("previoustrack", hasPrevious ? playPrevious : null);
+    set("nexttrack", hasNext ? playNext : null);
+    set("seekbackward", (d) => seek(Math.max(0, (audio?.currentTime ?? 0) - (d.seekOffset ?? 10))));
+    set("seekforward", (d) => seek(Math.min(audio?.duration || Infinity, (audio?.currentTime ?? 0) + (d.seekOffset ?? 10))));
+    set("seekto", (d) => { if (d.seekTime != null) seek(d.seekTime); });
+    return () => {
+      (["play", "pause", "previoustrack", "nexttrack", "seekbackward", "seekforward", "seekto"] as const).forEach((a) => set(a, null));
+    };
+  }, [nowPlaying, hasNext, hasPrevious, playNext, playPrevious, seek, safePlay]);
+
+  // Keep the OS scrubber in step. Only on events that change the timeline — the OS
+  // extrapolates position itself between them, so this doesn't need to run per-tick.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const sync = () => {
+      if (!isFinite(audio.duration) || audio.duration <= 0) return;
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          position: Math.min(audio.currentTime, audio.duration),
+          playbackRate: audio.playbackRate || 1,
+        });
+      } catch { /* invalid state during track switch */ }
+    };
+    const events = ["loadedmetadata", "seeked", "ratechange", "playing"] as const;
+    events.forEach((e) => audio.addEventListener(e, sync));
+    return () => events.forEach((e) => audio.removeEventListener(e, sync));
+  }, []);
+
   // Handles track-end behavior — depends on live repeat/queue state, so it's
   // re-bound whenever that state changes rather than living in the mount-once effect.
   useEffect(() => {
@@ -278,17 +376,33 @@ export function MusicPlayerProvider({ children }: { children: React.ReactNode })
     });
   }, []);
 
+  const value = useMemo(() => ({
+    nowPlaying, isPlaying, isBuffering, kickedOut, queue, hasNext, hasPrevious,
+    volume, isMuted, repeatMode, playbackRate,
+    play, toggle, seek, playNext, playPrevious, dismissKicked,
+    setVolume, toggleMute, cycleRepeat, setRepeatMode, cyclePlaybackRate,
+  }), [
+    nowPlaying, isPlaying, isBuffering, kickedOut, queue, hasNext, hasPrevious,
+    volume, isMuted, repeatMode, playbackRate,
+    play, toggle, seek, playNext, playPrevious, dismissKicked,
+    setVolume, toggleMute, cycleRepeat, setRepeatMode, cyclePlaybackRate,
+  ]);
+
+  const time = useMemo(() => ({ currentTime, duration }), [currentTime, duration]);
+
   return (
-    <MusicPlayerContext.Provider value={{
-      nowPlaying, isPlaying, isBuffering, kickedOut, currentTime, duration, queue, hasNext, hasPrevious,
-      volume, isMuted, repeatMode, playbackRate,
-      play, toggle, seek, playNext, playPrevious, dismissKicked,
-      setVolume, toggleMute, cycleRepeat, setRepeatMode, cyclePlaybackRate,
-    }}>
-      {children}
-      <audio ref={audioRef} />
+    <MusicPlayerContext.Provider value={value}>
+      <MusicPlayerTimeContext.Provider value={time}>
+        {children}
+      </MusicPlayerTimeContext.Provider>
+      <audio ref={audioRef} preload="auto" />
     </MusicPlayerContext.Provider>
   );
+}
+
+/** Playback position — subscribe only where it's displayed (progress bar). */
+export function useMusicPlayerTime() {
+  return useContext(MusicPlayerTimeContext);
 }
 
 export function useMusicPlayer() {

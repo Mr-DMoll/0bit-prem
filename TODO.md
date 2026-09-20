@@ -175,6 +175,31 @@ Audit findings from earlier the same day, all addressed in one pass, modeled on 
 - [x] Contact: fixed dead-space layout (form/sidebar now properly fill the content width)
 - [x] Fixed a real bug found during verification: `GET /auth/me` (used by `AuthContext` on every page load) had its own stale field-select missing city/country/language/dateOfBirth and all shipping fields — silently broke the new Address-prefill feature until fixed to match `/users/me`'s select
 
+
+## Performance — pass 1 done (2026-09-20), keep improving
+
+Goal: the site should feel native. Pass 1 measured first, then fixed the biggest costs.
+
+**Done in pass 1**
+- [x] Images: album covers were 2–3 MB PNGs shown as thumbnails. Now routed through Next's optimizer via `optimizedImage()/optimizedBackground()` in `apps/web/src/shared/utils/image.ts` (2.0 MB → 3.6/30/68 KB at thumb/card/large). `images.remotePatterns` in `next.config.js` MUST list every host we optimize; unknown hosts fall back to the raw URL so they never break.
+- [x] Fonts: 15 files → 3 (Inter + Cormorant are variable fonts; dropped explicit weight lists in `app/layout.tsx`).
+- [x] Public data cache (`apps/web/src/api/cache.ts`): stale-while-revalidate (fresh 60s, stale-usable 30 min, localStorage-backed) for content, albums list, gallery, events, merch list. Idle prefetch of all tabs in `PublicShell`. Admin writes clear it (`client.ts`). Never use it for per-user data (album ownership, orders, sanctum mix).
+- [x] API `Cache-Control: public, max-age=30, stale-while-revalidate=300` on the public list endpoints (`middleware/cache.middleware.ts`); error handler strips it so errors are never cached.
+- [x] Player: playback position moved to its own context (`useMusicPlayerTime`) so the whole app no longer re-renders ~4×/sec while playing; context value memoized; next-track preload (skipped when Data Saver is on); Media Session API (lock-screen/headset controls, cover art, scrubber).
+
+**Next up — ordered roughly by payoff**
+- [ ] **Audio start latency (biggest remaining).** Every m4a checked has its `moov` index at the END of the file (`ftyp → free → mdat → moov`), so each play needs an extra range request for the tail before audio starts. Fix is a lossless re-mux: `ffmpeg -i in.m4a -c copy -movflags +faststart out.m4a` — no re-encode, no quality change. Needs: re-mux all 29 existing tracks in the R2 bucket (overwrites production files, get explicit OK first; no local ffmpeg but Docker is installed, use an ffmpeg image), AND a plan for new uploads (admin upload flow currently sends the raw file straight to R2 via presigned URL, so new tracks will have the same problem — either require faststart exports, or add a processing step).
+- [ ] **Server-render public pages.** Every public page is `"use client"` and fetches after hydration (HTML → JS → hydrate → API). Moving data fetching to server components with ISR (`revalidate` ~60s) puts real text in the first HTML for first-time visitors. ~9 pages: home/Sanctum, music, music/[albumId], harinam, about, contact, gallery, events, merch. Keep per-user bits (isOwned, sanctum mix owned/sampler) client-side.
+- [ ] **R2 custom domain** (e.g. `media.premvkay.co.za`) — `*.r2.dev` is throttled and not edge-cached by Cloudflare; a custom domain gives CDN caching for every image and audio file. When done: add the host to `images.remotePatterns` in `next.config.js` AND to `OPTIMIZABLE_HOSTS` in `shared/utils/image.ts`, and existing DB rows still point at the old `pub-…r2.dev` host (either keep both hosts allowed or rewrite the URLs). Overlaps the R2 note under File storage.
+- [ ] **Resize on upload.** Optimizer fixes display, but originals are still multi-MB in R2. Consider downscaling covers/gallery/merch images client-side before upload (canvas) or server-side, so the optimizer fetches smaller sources and storage stays lean. Also: uploaded cover/gallery/merch `<img>` tags have no `width`/`height`, so layout can shift as they load.
+- [ ] **Gallery grid**: only `loading="lazy"` + optimizer today. Consider blur-up placeholders (tiny base64 LQIP) so the masonry doesn't pop in, and virtualizing if the gallery grows large.
+- [ ] **Home/Sanctum backdrop** is an Unsplash placeholder; when real photography lands, self-host it (R2/public) at a sensible size and preload it. It's the LCP element on the landing page.
+- [ ] **Player follow-ups**: verify next-track preload actually fires (couldn't observe it in pass 1 — the test track was last in its queue); consider gapless playback (swap to the preloaded element instead of re-setting `src`); a shared preloaded-element handoff; `playNext` currently re-requests the URL and relies on the HTTP cache.
+- [ ] **API latency**: cold first request measured ~1s, warm ~0.4–0.5s TTFB from SA. Check the Railway API region vs Vercel region vs DB, and whether a keep-warm / pooled connection is needed. Baseline numbers (2026-09-20): music/albums 0.97s cold, content 0.46s, gallery 0.41s, events 0.48s, merch 0.47s.
+- [ ] **Measure properly**: add Vercel Speed Insights / Web Vitals (LCP, INP, CLS) and Lighthouse runs on mobile, so the next pass is driven by real field data, not guesses. Pass 1 was measured with curl + the dev browser only; nothing was measured on a real phone.
+- [ ] **Service worker / offline shell** (optional, later): cache the app shell, fonts and last-seen content so repeat visits are near-instant even on poor connections. Note `/sw.js` currently 404s in dev logs — something is requesting one.
+- [ ] **Bundle audit**: run `@next/bundle-analyzer`; the public shell pulls in `marked`, lucide icons and admin-shared code — check nothing heavy ships to the landing page.
+
 ## UI polish — after the above
 
 - [ ] Sanctum "now playing" real screen — currently an atmospheric placeholder even while a track is actively playing elsewhere on the site

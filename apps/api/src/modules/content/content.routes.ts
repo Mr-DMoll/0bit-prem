@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { adminGetContent, adminUpdateContent, adminRevertContent, getContent } from "./content.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
+import { publicCache } from "../../middleware/cache.middleware.js";
 import { authorize } from "../../middleware/role.middleware.js";
 import { Role } from "@repo/types";
 
@@ -12,4 +13,4 @@ adminContentRouter.put("/",  adminUpdateContent);
 adminContentRouter.post("/:key/revert", adminRevertContent);
 
 export const publicContentRouter = Router();
-publicContentRouter.get("/", getContent);
+publicContentRouter.get("/", publicCache(), getContent);

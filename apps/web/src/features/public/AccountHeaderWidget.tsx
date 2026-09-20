@@ -33,6 +33,7 @@ function GoogleIcon() {
 function AccountHeaderWidgetInner() {
   const { user, isLoading, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -84,6 +85,7 @@ function AccountHeaderWidgetInner() {
 
   const displayName = user.displayName || [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email;
   const initials = displayName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+  const showAvatar = !!user.avatarUrl && user.avatarUrl !== failedAvatarUrl;
 
   return (
     <div ref={containerRef} style={{ position: "relative" }}>
@@ -97,12 +99,20 @@ function AccountHeaderWidgetInner() {
       >
         <div style={{
           width: "30px", height: "30px", borderRadius: "50%",
-          background: user.avatarUrl ? "transparent" : "var(--color-accent-subtle)",
+          background: showAvatar ? "transparent" : "var(--color-accent-subtle)",
           border: "1px solid var(--color-accent-border)",
           display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0,
         }}>
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          {showAvatar ? (
+            // no-referrer: Google's avatar host can refuse hot-linked requests carrying our site's Referer.
+            // onError falls back to the initials so a blocked/expired image never shows a broken-image icon.
+            <img
+              src={user.avatarUrl!}
+              alt=""
+              referrerPolicy="no-referrer"
+              onError={() => setFailedAvatarUrl(user.avatarUrl ?? null)}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           ) : (
             <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)" }}>{initials}</span>
           )}

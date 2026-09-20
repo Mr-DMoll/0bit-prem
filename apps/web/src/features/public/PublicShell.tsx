@@ -1,6 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import PublicSidebar from "./PublicSidebar";
+import { publicContentService } from "./services/content.service";
+import { publicMusicService } from "./services/music.service";
+import { publicGalleryService } from "./services/gallery.service";
+import { publicEventsService } from "./services/events.service";
+import { publicMerchService } from "./services/merch.service";
 import MiniPlayer from "./MiniPlayer";
 import { MusicPlayerProvider, useMusicPlayer } from "./MusicPlayerContext";
 import { CartProvider } from "./CartContext";
@@ -31,7 +37,30 @@ function AppFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Once the page the visitor asked for has painted, quietly fetch the public data the
+// other tabs need, so tapping the sidebar shows content instantly instead of a spinner.
+function usePrefetchPublicData() {
+  useEffect(() => {
+    const run = () => {
+      const swallow = () => {};
+      publicContentService.getContent().catch(swallow);
+      publicMusicService.getAlbums().catch(swallow);
+      publicGalleryService.getImages().catch(swallow);
+      publicEventsService.getEvents("GENERAL").catch(swallow);
+      publicEventsService.getEvents("HARINAM").catch(swallow);
+      publicMerchService.getProducts().catch(swallow);
+    };
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(run, { timeout: 3000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(run, 1500);
+    return () => clearTimeout(id);
+  }, []);
+}
+
 export default function PublicShell({ children }: { children: React.ReactNode }) {
+  usePrefetchPublicData();
   return (
     <MusicPlayerProvider>
       <CartProvider>

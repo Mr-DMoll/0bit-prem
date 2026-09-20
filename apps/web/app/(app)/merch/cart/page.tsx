@@ -6,6 +6,7 @@ import PageHeader from "@/features/public/PageHeader";
 import { useCart } from "@/features/public/CartContext";
 import { useAuth } from "@/shared/context/AuthContext";
 import { publicMerchService } from "@/features/public/services/merch.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
@@ -95,7 +96,7 @@ export default function CartPage() {
           <div key={item.variantId} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px", background: "var(--color-card-bg)", border: "1px solid var(--color-card-border)", borderRadius: "var(--radius-lg)" }}>
             <div style={{
               width: "48px", height: "48px", borderRadius: "var(--radius-md)", flexShrink: 0,
-              background: item.imageUrl ? `url(${item.imageUrl}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+              background: item.imageUrl ? optimizedBackground(item.imageUrl, 128) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
               border: "1px solid var(--color-border)",
             }} />
             <div style={{ flex: 1 }}>

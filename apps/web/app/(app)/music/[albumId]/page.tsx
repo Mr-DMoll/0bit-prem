@@ -7,6 +7,7 @@ import { useMusicPlayer } from "@/features/public/MusicPlayerContext";
 import { useAuth } from "@/shared/context/AuthContext";
 import LockedTrackPrompt from "@/features/public/LockedTrackPrompt";
 import { publicMusicService, type PublicAlbum, type PublicTrack } from "@/features/public/services/music.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 function formatDuration(seconds: number) {
   if (!seconds) return "—";
@@ -79,7 +80,7 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
       <div style={{ display: "flex", gap: "24px", marginBottom: "28px", flexWrap: "wrap" }}>
         <div style={{
           width: "160px", height: "160px", borderRadius: "var(--radius-lg)", flexShrink: 0,
-          background: album.coverImageUrl ? `url(${album.coverImageUrl}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+          background: album.coverImageUrl ? optimizedBackground(album.coverImageUrl, 384) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
           border: "1px solid var(--color-card-border)",
         }} />
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px" }}>

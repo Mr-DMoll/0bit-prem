@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Pause, SkipBack, SkipForward, Repeat, Repeat1, Maximize2, ListMusic, Loader2 } from "lucide-react";
-import { useMusicPlayer } from "./MusicPlayerContext";
+import { useMusicPlayer, useMusicPlayerTime } from "./MusicPlayerContext";
 import VolumeControl from "./VolumeControl";
 import TrackListPanel from "./TrackListPanel";
 import LockedTrackPrompt from "./LockedTrackPrompt";
 import type { PublicTrack } from "./services/music.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -18,9 +19,10 @@ function formatTime(seconds: number) {
 
 export default function MiniPlayer() {
   const {
-    nowPlaying, isPlaying, isBuffering, kickedOut, hasNext, hasPrevious, repeatMode, currentTime, duration,
+    nowPlaying, isPlaying, isBuffering, kickedOut, hasNext, hasPrevious, repeatMode,
     queue, playbackRate, toggle, dismissKicked, playNext, playPrevious, cycleRepeat, cyclePlaybackRate, seek, play,
   } = useMusicPlayer();
+  const { currentTime, duration } = useMusicPlayerTime();
   const [showQueue, setShowQueue] = useState(false);
   const [lockedTrack, setLockedTrack] = useState<PublicTrack | null>(null);
   const router = useRouter();
@@ -82,7 +84,7 @@ export default function MiniPlayer() {
             width: "36px", height: "36px", borderRadius: "var(--radius-md)", flexShrink: 0, overflow: "hidden",
             cursor: nowPlaying ? "pointer" : "default",
             background: nowPlaying?.albumCoverUrl
-              ? `url(${nowPlaying.albumCoverUrl}) center/cover`
+              ? optimizedBackground(nowPlaying.albumCoverUrl, 96)
               : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
             border: "1px solid var(--color-card-border)",
           }}

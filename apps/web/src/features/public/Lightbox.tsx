@@ -3,6 +3,8 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Download, Share2 } from "lucide-react";
 import { useToast } from "@/shared/context/ToastContext";
+import { optimizedBackground } from "@/shared/utils/image";
+import { optimizedImage } from "@/shared/utils/image";
 
 export interface LightboxImage {
   url: string;
@@ -143,7 +145,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
         )}
 
         <img
-          src={current.url}
+          src={optimizedImage(current.url, 1920)}
           alt={current.caption ?? ""}
           style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain", borderRadius: "var(--radius-lg)" }}
         />
@@ -177,7 +179,7 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
               style={{
                 width: "56px", height: "56px", flexShrink: 0, padding: 0, cursor: "pointer",
                 borderRadius: "var(--radius-md)",
-                background: `url(${img.url}) center/cover`,
+                background: optimizedBackground(img.url, 128),
                 border: i === index ? "2px solid var(--color-accent)" : "1px solid rgba(255,255,255,0.2)",
                 opacity: i === index ? 1 : 0.55,
               }}

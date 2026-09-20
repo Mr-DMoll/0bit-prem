@@ -8,6 +8,7 @@ import { endpoints } from "@/api/endpoints";
 import PageHeader from "@/features/public/PageHeader";
 import { publicMusicService, type MyAlbumPurchase } from "@/features/public/services/music.service";
 import { publicMerchService, type MyOrder } from "@/features/public/services/merch.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
@@ -129,7 +130,7 @@ function AccountContent() {
               <Link key={id} href={`/music/${album.id}`} style={{ textDecoration: "none" }}>
                 <div style={{
                   aspectRatio: "1", borderRadius: "var(--radius-lg)",
-                  background: album.coverImageUrl ? `url(${album.coverImageUrl}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+                  background: album.coverImageUrl ? optimizedBackground(album.coverImageUrl, 384) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
                   border: "1px solid var(--color-card-border)", marginBottom: "8px",
                 }} />
                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--color-text-primary)" }}>{album.title}</p>

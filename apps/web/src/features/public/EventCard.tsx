@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PublicEvent } from "./services/events.service";
+import { optimizedBackground } from "@/shared/utils/image";
 
 export default function EventCard({ event }: { event: PublicEvent }) {
   return (
@@ -11,7 +12,7 @@ export default function EventCard({ event }: { event: PublicEvent }) {
       }}>
         <div style={{
           width: "72px", height: "72px", borderRadius: "var(--radius-md)", flexShrink: 0,
-          background: event.imageUrl ? `url(${event.imageUrl}) center/cover` : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
+          background: event.imageUrl ? optimizedBackground(event.imageUrl, 256) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",
           border: "1px solid var(--color-border)",
         }} />
         <div style={{ flex: 1 }}>

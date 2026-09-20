@@ -8,15 +8,16 @@ import { ToastProvider } from "@/shared/context/ToastContext";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  // Variable font: one file covers every weight instead of five separate downloads.
   variable: "--font-inter",
+  display: "swap",
 });
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-cormorant",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

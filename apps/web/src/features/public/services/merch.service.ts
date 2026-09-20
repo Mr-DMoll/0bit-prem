@@ -1,5 +1,6 @@
 import apiClient from "@/api/client";
 import { endpoints } from "@/api/endpoints";
+import { cachedGet } from "@/api/cache";
 
 export type ProductCategory = "APPAREL" | "ACCESSORIES" | "BOOKS";
 
@@ -55,8 +56,8 @@ export interface MyOrder {
 
 export const publicMerchService = {
   async getProducts(category?: ProductCategory): Promise<{ data: { products: PublicProduct[] } }> {
-    const { data } = await apiClient.get(endpoints.merch.products, { params: category ? { category } : undefined });
-    return data;
+    return cachedGet(`products:${category ?? "all"}`, async () =>
+      (await apiClient.get(endpoints.merch.products, { params: category ? { category } : undefined })).data);
   },
   async getProduct(id: string): Promise<{ data: { product: PublicProduct; relatedProducts: PublicProduct[] } }> {
     const { data } = await apiClient.get(endpoints.merch.productById(id));

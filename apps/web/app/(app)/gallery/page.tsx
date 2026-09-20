@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/features/public/PageHeader";
 import Lightbox from "@/features/public/Lightbox";
 import { publicGalleryService, type PublicGalleryImage, type PublicGalleryAlbum } from "@/features/public/services/gallery.service";
+import { optimizedImage } from "@/shared/utils/image";
 
 export default function GalleryPage() {
   const [images, setImages]       = useState<PublicGalleryImage[]>([]);
@@ -64,9 +65,10 @@ export default function GalleryPage() {
                 }}
               >
                 <img
-                  src={img.url}
+                  src={optimizedImage(img.url, 640)}
                   alt={img.caption || "Premvkay gallery photo"}
                   loading="lazy"
+                  decoding="async"
                   style={{ width: "100%", display: "block" }}
                 />
               </button>

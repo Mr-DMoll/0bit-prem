@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import axios from "axios";
+import { clearCache } from "./cache";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
@@ -33,7 +34,13 @@ apiClient.interceptors.request.use((config) => {
 const PROTECTED_PATH_PREFIXES = ["/admin", "/manager", "/super-admin"];
 
 apiClient.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // An admin just changed something: drop cached public data so they see their edit
+    // immediately instead of a stale copy from the read cache.
+    const method = res.config.method?.toLowerCase();
+    if (method && method !== "get" && res.config.url?.includes("/admin/")) clearCache();
+    return res;
+  },
   (err) => {
     if (err.response?.status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("auth_token");

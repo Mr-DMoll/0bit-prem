@@ -1,3 +1,4 @@
+import { optimizedImage } from "@/shared/utils/image";
 // Placeholder atmosphere shot until real Premvkay photography replaces it.
 export const SANCTUM_BACKDROP_URL = "https://images.unsplash.com/photo-1750759213152-cc80468c21a6?w=1600&h=1000&fit=crop&auto=format&q=85";
 
@@ -7,7 +8,9 @@ export function SanctumBackdrop({ playing }: { playing: boolean }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
       <img
-        src={SANCTUM_BACKDROP_URL}
+        src={optimizedImage(SANCTUM_BACKDROP_URL, 1920)}
+        fetchPriority="high"
+        decoding="async"
         alt=""
         style={{
           position: "absolute", inset: 0, width: "100%", height: "100%",

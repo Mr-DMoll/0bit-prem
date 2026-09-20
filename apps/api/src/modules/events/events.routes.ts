@@ -4,6 +4,7 @@ import {
   listEvents, getEvent,
 } from "./events.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
+import { publicCache } from "../../middleware/cache.middleware.js";
 import { authorize } from "../../middleware/role.middleware.js";
 import { Role } from "@repo/types";
 
@@ -17,5 +18,5 @@ adminEventsRouter.patch("/:id",     adminUpdateEvent);
 adminEventsRouter.delete("/:id",    adminDeleteEvent);
 
 export const publicEventsRouter = Router();
-publicEventsRouter.get("/", listEvents);
+publicEventsRouter.get("/", publicCache(), listEvents);
 publicEventsRouter.get("/:id", getEvent);

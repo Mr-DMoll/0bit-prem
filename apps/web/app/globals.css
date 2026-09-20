@@ -313,6 +313,23 @@ input, textarea, select { font-family: inherit; }
   0%,100% { box-shadow: 0 0 30px rgba(245,154,10,.4),  0 0 70px  rgba(245,154,10,.18), inset 0 1px 0 rgba(245,154,10,.3); }
   50%     { box-shadow: 0 0 50px rgba(245,154,10,.55), 0 0 110px rgba(245,154,10,.25), inset 0 1px 0 rgba(245,154,10,.35); }
 }
+@keyframes pk-tap-glow {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(255,170,40,.55)); opacity: .9; }
+  50%     { filter: drop-shadow(0 0 16px rgba(255,120,60,.95)); opacity: 1; }
+}
+.pk-tap-cta {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #ffd166, #ff9f43 45%, #ff6b6b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #ffb84d;
+  animation: pk-tap-glow 2.4s ease-in-out infinite;
+}
 @keyframes pk-ring-breath {
   0%,100% { opacity: .85; }
   50%     { opacity: 1;   }
