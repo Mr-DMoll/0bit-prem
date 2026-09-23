@@ -125,7 +125,7 @@ function AccountContent() {
         albums.length === 0 ? (
           <p style={{ fontSize: "13px", color: "var(--color-text-muted)" }}>No albums yet — browse <Link href="/music" style={{ color: "var(--color-accent)" }}>Music</Link>.</p>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "16px" }}>
+          <div className="pk-card-grid" style={{ ["--pk-card-min" as string]: "140px", ["--pk-card-gap" as string]: "16px" }}>
             {albums.map(({ id, album }) => (
               <Link key={id} href={`/music/${album.id}`} style={{ textDecoration: "none" }}>
                 <div style={{
@@ -280,7 +280,7 @@ function ProfileTab() {
       <div style={{ flex: "2 1 480px" }}>
         <Card title="Personal information">
           <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
+            <div className="pk-form-grid-3">
               <div>
                 <label style={labelStyle}>First name</label>
                 <input style={inputStyle} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
@@ -294,7 +294,7 @@ function ProfileTab() {
                 <input style={inputStyle} value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
+            <div className="pk-form-grid-3">
               <div>
                 <label style={labelStyle}>Phone</label>
                 <input style={inputStyle} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
@@ -368,7 +368,7 @@ function AddressTab() {
             Saved once, used to pre-fill Merch checkout every time.
           </p>
           <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div className="pk-form-grid-2">
               <div>
                 <label style={labelStyle}>Full name</label>
                 <input style={inputStyle} value={form.shippingName} onChange={(e) => setForm({ ...form, shippingName: e.target.value })} />
@@ -378,7 +378,7 @@ function AddressTab() {
                 <input style={inputStyle} value={form.shippingPhone} onChange={(e) => setForm({ ...form, shippingPhone: e.target.value })} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div className="pk-form-grid-2">
               <div>
                 <label style={labelStyle}>Address line 1</label>
                 <input style={inputStyle} value={form.shippingLine1} onChange={(e) => setForm({ ...form, shippingLine1: e.target.value })} />
@@ -388,7 +388,7 @@ function AddressTab() {
                 <input style={inputStyle} value={form.shippingLine2} onChange={(e) => setForm({ ...form, shippingLine2: e.target.value })} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <div className="pk-form-grid-2">
               <div>
                 <label style={labelStyle}>City</label>
                 <input style={inputStyle} value={form.shippingCity} onChange={(e) => setForm({ ...form, shippingCity: e.target.value })} />

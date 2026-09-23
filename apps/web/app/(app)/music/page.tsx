@@ -28,7 +28,7 @@ export default function MusicPage() {
       ) : albums.length === 0 ? (
         <p style={{ fontSize: "13px", color: "var(--color-text-muted)" }}>No albums yet — check back soon.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "20px" }}>
+        <div className="pk-card-grid">
           {albums.map((album) => (
             <Link key={album.id} href={`/music/${album.id}`} style={{ textDecoration: "none" }}>
               <div>

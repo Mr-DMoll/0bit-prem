@@ -69,16 +69,20 @@ function AccountHeaderWidgetInner() {
     return (
       <button
         onClick={handleGoogleSignIn}
+        className="pk-google-cta"
         style={{
-          display: "flex", alignItems: "center", gap: "10px",
-          padding: "9px 18px 9px 14px", background: "transparent",
+          display: "flex", alignItems: "center",
+          background: "transparent",
           border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-md)", fontSize: "14px", fontWeight: 600,
+          borderRadius: "var(--radius-md)", fontWeight: 600,
           color: "var(--color-text-primary)", cursor: "pointer", whiteSpace: "nowrap",
         }}
       >
         <GoogleIcon />
-        Continue with Google
+        {/* Full label on tablet+; a header this narrow can't afford "Continue with"
+            without crowding the page title, so phones just get "Sign in". */}
+        <span className="pk-google-cta__full">Continue with Google</span>
+        <span className="pk-google-cta__short">Sign in</span>
       </button>
     );
   }

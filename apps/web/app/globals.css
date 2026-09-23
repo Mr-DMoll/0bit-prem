@@ -378,6 +378,32 @@ input, textarea, select { font-family: inherit; }
    duplicate row cluttering the altar. */
 .pk-sanctum-controls { display: none; }
 
+/* Shared responsive card grid for album/product browsing. Base (desktop/tablet)
+   keeps the original 180px minimum; the 640px query below shrinks it for phones.
+   Set --pk-card-min/--pk-card-gap inline on a per-page basis only if a grid needs
+   a different base size than 180px/20px (e.g. related-products' 160px/18px).
+   Defined here, ABOVE every max-width override below, so the cascade (same
+   specificity either way) lets the narrower media query win as the viewport
+   shrinks — placing it after those queries would make this base rule always win. */
+.pk-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--pk-card-min, 180px), 1fr));
+  gap: var(--pk-card-gap, 20px);
+}
+
+/* Account settings forms (name/phone, shipping address) used a fixed 2- or
+   3-column grid with no mobile fallback — on a phone that's ~100px per input,
+   too tight to use comfortably. Collapses to one field per row below 480px. */
+.pk-form-grid-2, .pk-form-grid-3 { display: grid; gap: 14px; }
+.pk-form-grid-2 { grid-template-columns: 1fr 1fr; }
+.pk-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.pk-google-cta {
+  padding: 9px 18px 9px 14px;
+  gap: 10px;
+  font-size: 14px;
+}
+
 @media (max-width: 1023px) {
   .pk-app {
     --pk-content-margin-left:    0px;
@@ -417,4 +443,29 @@ input, textarea, select { font-family: inherit; }
   .pk-miniplayer-extra { display: none !important; }
   .pk-miniplayer-title { width: auto !important; flex: 1 1 auto !important; }
   .pk-sanctum-controls { display: flex; }
+
+  /* Card grids (album/product browsing) used a flat `minmax(180px, 1fr)` with
+     no mobile override — on a ~340-390px content width that only ever fits
+     ONE column, so every card rendered as a near-full-width cover with
+     oversized everything below it. Shrinking the minimum here restores a
+     real 2-column mobile grid; --pk-card-min is set per-grid via the
+     .pk-card-grid class so this affects only the browsing grids, not
+     lists like the account "purchases" rows that are meant to stay full-width. */
+  .pk-card-grid {
+    --pk-card-min: 132px;
+    gap: 14px;
+  }
+
+  /* The logged-out header CTA ("Continue with Google") was the widest thing
+     in the header on a phone, dwarfing the page title next to it. */
+  .pk-google-cta { padding: 8px 14px 8px 10px !important; gap: 8px !important; font-size: 13px !important; }
+  .pk-google-cta__full { display: none; }
+}
+
+@media (min-width: 641px) {
+  .pk-google-cta__short { display: none; }
+}
+
+@media (max-width: 480px) {
+  .pk-form-grid-2, .pk-form-grid-3 { grid-template-columns: 1fr; }
 }

@@ -24,7 +24,7 @@ function RelatedProducts({ products }: { products: PublicProduct[] }) {
       <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
         You might also like
       </h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "18px" }}>
+      <div className="pk-card-grid" style={{ ["--pk-card-min" as string]: "160px", ["--pk-card-gap" as string]: "18px" }}>
         {products.map((p) => (
           <Link key={p.id} href={`/merch/${p.id}`} style={{ textDecoration: "none" }}>
             <div style={{
@@ -100,7 +100,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ produc
       <PageHeader title={product.name} />
 
       <div style={{ display: "flex", gap: "40px", flexWrap: "wrap", maxWidth: "1100px" }}>
-        <div style={{ width: "380px", flexShrink: 0 }}>
+        <div style={{ width: "100%", maxWidth: "380px", flexShrink: 0 }}>
           <div style={{
             aspectRatio: "1", borderRadius: "var(--radius-lg)", width: "100%",
             background: images[activeImage] ? optimizedBackground(images[activeImage], 1080) : "linear-gradient(135deg, hsl(38,65%,22%), hsl(16,50%,8%))",

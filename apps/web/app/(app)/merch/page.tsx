@@ -74,7 +74,7 @@ export default function MerchPage() {
       ) : products.length === 0 ? (
         <p style={{ fontSize: "13px", color: "var(--color-text-muted)" }}>No merch available yet — check back soon.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "20px" }}>
+        <div className="pk-card-grid">
           {products.map((product) => (
             <Link key={product.id} href={`/merch/${product.id}`} style={{ textDecoration: "none" }}>
               <div>
