@@ -10,10 +10,12 @@ import { HttpStatus } from "@repo/types";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { AppError } from "../../utils/appError.js";
 import { getPresignedUploadUrl, uploadObject } from "../../services/s3.service.js";
+import { compressImage } from "../../services/image.service.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const ALLOWED_FOLDERS = ["albums", "tracks", "events", "gallery", "products", "content"];
+const ALLOWED_IMAGE_FOLDERS = ALLOWED_FOLDERS.filter((f) => f !== "tracks");
 
 function sanitizeFilename(filename: string): string {
   return filename.toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "");
@@ -30,6 +32,30 @@ export const presignUpload = catchAsync(async (req: Request, res: Response) => {
   const { uploadUrl, publicUrl } = await getPresignedUploadUrl(key, contentType);
 
   return res.status(HttpStatus.OK).json({ status: "success", data: { uploadUrl, publicUrl } });
+});
+
+// Images come through the server (not a direct-to-R2 presigned PUT) so they can be
+// downscaled and re-encoded — admin uploads are routinely multi-megabyte camera
+// photos or AI-generated art shown as small thumbnails, and serving those originals
+// straight from R2's public dev domain is what caused Gallery images to time out
+// intermittently (see image.service.ts). Currently only wired up for the Gallery
+// admin uploader; the same endpoint works for any folder in ALLOWED_IMAGE_FOLDERS.
+export const uploadImageMiddleware = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+}).single("file");
+
+export const uploadImage = catchAsync(async (req: Request, res: Response) => {
+  if (!req.file) throw new AppError("file is required", HttpStatus.BAD_REQUEST);
+  const { folder } = req.body;
+  if (!ALLOWED_IMAGE_FOLDERS.includes(folder)) throw new AppError("Invalid folder", HttpStatus.BAD_REQUEST);
+
+  const { buffer, contentType, extension } = await compressImage(req.file.buffer);
+  const baseName = sanitizeFilename(req.file.originalname.replace(/\.[^./]+$/, ""));
+  const key = `${folder}/${randomBytes(8).toString("hex")}-${baseName}.${extension}`;
+  const publicUrl = await uploadObject(key, buffer, contentType);
+
+  return res.status(HttpStatus.OK).json({ status: "success", data: { publicUrl } });
 });
 
 // Tracks come through the server (not a direct-to-R2 presigned PUT) so they can be

@@ -114,6 +114,7 @@ export const endpoints = {
   adminUploads: {
     presign: "/admin/uploads/presign",
     track:   "/admin/uploads/track",
+    image:   "/admin/uploads/image",
   },
 
   // Content (About/Contact/Harinam text, admin + public)

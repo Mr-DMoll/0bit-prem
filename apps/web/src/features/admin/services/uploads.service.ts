@@ -57,6 +57,41 @@ export const uploadsService = {
     return publicUrl;
   },
 
+  // Images go through the API server (not a direct-to-R2 presigned PUT) so they can
+  // be downscaled/re-encoded server-side before they ever reach R2 — see
+  // apps/api's image.service.ts for why. Same XHR-for-progress + "upload leg only
+  // goes to ~90%" pattern as uploadTrack below; the rest covers server-side resizing.
+  async uploadImage(
+    file: File,
+    folder: "albums" | "events" | "gallery" | "products" | "content",
+    onProgress: (percent: number) => void
+  ): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("folder", folder);
+
+    return new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${apiClient.defaults.baseURL}${endpoints.adminUploads.image}`);
+      xhr.withCredentials = true;
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 90));
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          onProgress(100);
+          resolve(JSON.parse(xhr.responseText).data.publicUrl);
+        } else {
+          reject(new Error("Image upload failed"));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Image upload failed"));
+      xhr.send(formData);
+    });
+  },
+
   // Track audio goes through the API server (not a direct-to-R2 presigned PUT) so
   // it can be transcoded from whatever the admin uploads (often lossless FLAC/WAV)
   // down to a much smaller compressed format before it's stored.

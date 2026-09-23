@@ -398,6 +398,16 @@ input, textarea, select { font-family: inherit; }
 .pk-form-grid-2 { grid-template-columns: 1fr 1fr; }
 .pk-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
+/* Gallery lightbox: the main photo capped itself at 70vh on every screen size,
+   which on a short phone viewport left too little room for the caption + thumbnail
+   strip below it — they'd render past the visible fold (worse once you account for
+   Safari's dynamic toolbar shrinking the *actual* usable height below what `vh`
+   reports). Smaller cap on phones guarantees room for what's below it. */
+.pk-lightbox-img { max-height: 70vh; }
+@media (max-width: 640px) {
+  .pk-lightbox-img { max-height: 52vh; }
+}
+
 .pk-google-cta {
   padding: 9px 18px 9px 14px;
   gap: 10px;

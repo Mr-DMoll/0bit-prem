@@ -258,7 +258,7 @@ export function GalleryPage() {
 
     const results = await Promise.all(entries.map(async (entry) => {
       try {
-        const url = await uploadsService.uploadWithProgress(entry.file, "gallery", (pct) => {
+        const url = await uploadsService.uploadImage(entry.file, "gallery", (pct) => {
           setStaged((prev) => prev.map((s) => s.key === entry.key ? { ...s, progress: pct } : s));
         });
         return { url, ok: true as const };

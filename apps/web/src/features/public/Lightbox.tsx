@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Download, Share2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
 import { useToast } from "@/shared/context/ToastContext";
-import { optimizedBackground } from "@/shared/utils/image";
-import { optimizedImage } from "@/shared/utils/image";
+import { optimizedBackground, optimizedImage } from "@/shared/utils/image";
 
 export interface LightboxImage {
   url: string;
@@ -49,23 +48,6 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
     else if (delta < -SWIPE_THRESHOLD) goNext();
   };
 
-  const handleDownload = async () => {
-    try {
-      const res = await fetch(current.url);
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = current.url.split("/").pop() || "photo.jpg";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      toast("Couldn't download this photo. Please try again.");
-    }
-  };
-
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -85,11 +67,27 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.92)" }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.92)",
+        // Defensive: if the image + caption + thumbnails still don't fit a given
+        // screen, this lets the content scroll into view instead of silently
+        // clipping (a fixed-position box with no overflow rule just cuts content
+        // off at the viewport edge with no way to reach it).
+        overflowY: "auto",
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div style={{ position: "absolute", top: "20px", right: "24px", display: "flex", gap: "10px" }}>
+      {/* z-index matters here: this sits earlier in the DOM than the image container
+          below, and that container is `position: relative` (a "positioned" element,
+          same as this absolute-positioned row) with no reserved layout space of its
+          own for this row (removed from flow by `position: absolute`) — so it grows
+          to fill the same area and, being later in DOM order, painted on top,
+          silently eating every tap on these buttons. Was invisible because the
+          overlapping div has no background — the buttons still SHOWED, they just
+          couldn't be clicked. */}
+      <div style={{ position: "absolute", top: "20px", right: "24px", display: "flex", gap: "10px", zIndex: 2 }}>
         <button
           onClick={handleShare}
           aria-label="Share"
@@ -101,18 +99,6 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
           }}
         >
           <Share2 size={17} />
-        </button>
-        <button
-          onClick={handleDownload}
-          aria-label="Download"
-          style={{
-            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)",
-            borderRadius: "50%", width: "40px", height: "40px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", cursor: "pointer",
-          }}
-        >
-          <Download size={17} />
         </button>
         <button
           onClick={onClose}
@@ -147,7 +133,8 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
         <img
           src={optimizedImage(current.url, 1920)}
           alt={current.caption ?? ""}
-          style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain", borderRadius: "var(--radius-lg)" }}
+          className="pk-lightbox-img"
+          style={{ maxWidth: "100%", objectFit: "contain", borderRadius: "var(--radius-lg)" }}
         />
 
         {images.length > 1 && (
@@ -171,7 +158,10 @@ export default function Lightbox({ images, index, onClose, onIndexChange }: Ligh
       )}
 
       {images.length > 1 && (
-        <div style={{ display: "flex", gap: "8px", padding: "18px 20px 0", maxWidth: "90vw", overflowX: "auto" }}>
+        <div
+          className="pk-lightbox-thumbs"
+          style={{ display: "flex", gap: "8px", padding: "18px 20px max(14px, env(safe-area-inset-bottom))", maxWidth: "90vw", overflowX: "auto" }}
+        >
           {images.map((img, i) => (
             <button
               key={i}
