@@ -6,6 +6,7 @@ import { catchAsync } from "../../utils/catchAsync.js";
 import { AppError } from "../../utils/appError.js";
 import { slugify } from "../../utils/slugify.js";
 import { buildPaymentRedirect } from "../../services/payfast.service.js";
+import { isPaymentsEnabled } from "../payments/payments.controller.js";
 import env from "../../config/env.config.js";
 
 const STAFF_ROLES = [Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER];
@@ -296,6 +297,10 @@ export const getAlbum = catchAsync(async (req: Request, res: Response) => {
 export const purchaseAlbum = catchAsync(async (req: Request, res: Response) => {
   const { id: albumId } = req.params;
   const userId = req.user!.userId;
+
+  if (!(await isPaymentsEnabled())) {
+    throw new AppError("Purchases are temporarily unavailable — please check back soon.", HttpStatus.SERVICE_UNAVAILABLE);
+  }
 
   const album = await prisma.album.findUnique({ where: { id: albumId } });
   if (!album || album.status !== "LIVE") throw new AppError("Album not found", HttpStatus.NOT_FOUND);

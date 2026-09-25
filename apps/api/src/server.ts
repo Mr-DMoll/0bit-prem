@@ -34,6 +34,7 @@ import uploadsRoutes from "./modules/uploads/uploads.routes.js";
 import { adminContentRouter, publicContentRouter } from "./modules/content/content.routes.js";
 import { adminMerchRouter, publicMerchRouter, merchOrdersRouter } from "./modules/merch/merch.routes.js";
 import payfastRoutes from "./modules/payments/payfast.routes.js";
+import { adminPaymentsRouter } from "./modules/payments/payments.routes.js";
 
 const app: Express = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -110,6 +111,7 @@ app.use(`${API}/admin/merch`,   adminMerchRouter);
 app.use(`${API}/merch`,         publicMerchRouter);
 app.use(`${API}/merch-orders`,  merchOrdersRouter);
 app.use(`${API}/payments/payfast`, payfastRoutes);
+app.use(`${API}/admin/payments`, adminPaymentsRouter);
 
 // ── 6. 404 ────────────────────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {

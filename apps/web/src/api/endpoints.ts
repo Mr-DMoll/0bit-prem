@@ -117,6 +117,11 @@ export const endpoints = {
     image:   "/admin/uploads/image",
   },
 
+  // Payments — on/off switch for real PayFast checkout
+  adminPayments: {
+    settings: "/admin/payments/settings",
+  },
+
   // Content (About/Contact/Harinam text, admin + public)
   adminContent: {
     get:    "/admin/content",
