@@ -114,6 +114,9 @@ export default function PublicSidebar() {
         background: "var(--color-sidebar-bg)",
         borderTop: "1px solid var(--color-sidebar-border)",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.25)",
+        // Clears the home-indicator bar on notched phones — matches the "More"
+        // sheet below, which already accounts for it.
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}>
         {tabBarItems.map((item) => renderItem(item.href, item.label, item.icon))}
         <button

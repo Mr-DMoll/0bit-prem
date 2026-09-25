@@ -37,6 +37,19 @@ const env = {
   R2_BUCKET_NAME:       process.env.R2_BUCKET_NAME       as string,
   R2_PUBLIC_URL:        process.env.R2_PUBLIC_URL         as string,
 
+  // PayFast — once-off Album/Merch checkout
+  PAYFAST_MODE:          (process.env.PAYFAST_MODE as "live" | "sandbox") || "live",
+  PAYFAST_MERCHANT_ID:   process.env.PAYFAST_MERCHANT_ID   as string,
+  PAYFAST_MERCHANT_KEY:  process.env.PAYFAST_MERCHANT_KEY  as string,
+  PAYFAST_PASSPHRASE:    process.env.PAYFAST_PASSPHRASE    || "",
+  // Only needed in local dev, when testing a real PayFast payment via a tunnel
+  // (cloudflared/ngrok) — PayFast's ITN needs a public URL, but Google OAuth's
+  // redirect_uri is registered against API_URL (localhost) and breaks if that
+  // gets pointed at the tunnel too. Keeping them as separate variables avoids
+  // that conflict; in production this is unset and both features correctly
+  // share the one real public API_URL.
+  PAYFAST_TUNNEL_URL: process.env.PAYFAST_TUNNEL_URL || undefined,
+
   get isProduction()  { return this.NODE_ENV === "production";  },
   get isDevelopment() { return this.NODE_ENV === "development"; },
 };

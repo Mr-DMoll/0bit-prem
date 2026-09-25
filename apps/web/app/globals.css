@@ -417,7 +417,13 @@ input, textarea, select { font-family: inherit; }
 @media (max-width: 1023px) {
   .pk-app {
     --pk-content-margin-left:    0px;
-    --pk-content-bottom-idle:    24px;
+    /* The bottom tab bar is `position: fixed` (~65px tall, plus the home-indicator
+       safe area on notched phones) and this is the ONLY thing keeping page content
+       from rendering underneath it — 24px was nowhere near enough, so anything near
+       the bottom of a page (a button, the end of a long description) was covered by
+       the tab bar and unreachable. calc() here tracks the tab bar's real height
+       instead of guessing a fixed number. */
+    --pk-content-bottom-idle:    calc(65px + env(safe-area-inset-bottom) + 20px);
     --pk-content-bottom-playing: 172px;
     --pk-player-left:            12px;
     --pk-player-bottom:          76px;
@@ -453,6 +459,12 @@ input, textarea, select { font-family: inherit; }
   .pk-miniplayer-extra { display: none !important; }
   .pk-miniplayer-title { width: auto !important; flex: 1 1 auto !important; }
   .pk-sanctum-controls { display: flex; }
+
+  /* "Tap to enter" kept a flat 13px + 0.3em letter-spacing at every screen size —
+     on the 170px ring this breakpoint shrinks to, that letter-spacing alone renders
+     wider than the ring itself, so the label visually dominates the shrunken orb
+     instead of sitting inside its proportions. Scales down with the ring/orb here. */
+  .pk-tap-cta { font-size: 10.5px; letter-spacing: 0.18em; }
 
   /* Card grids (album/product browsing) used a flat `minmax(180px, 1fr)` with
      no mobile override — on a ~340-390px content width that only ever fits

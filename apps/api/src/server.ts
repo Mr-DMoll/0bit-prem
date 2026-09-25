@@ -33,6 +33,7 @@ import sessionsRoutes from "./modules/sessions/sessions.routes.js";
 import uploadsRoutes from "./modules/uploads/uploads.routes.js";
 import { adminContentRouter, publicContentRouter } from "./modules/content/content.routes.js";
 import { adminMerchRouter, publicMerchRouter, merchOrdersRouter } from "./modules/merch/merch.routes.js";
+import payfastRoutes from "./modules/payments/payfast.routes.js";
 
 const app: Express = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -70,7 +71,14 @@ app.use(
 
 // ── 3. PARSERS ────────────────────────────────────────────────────────────────
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Captures the raw form-encoded body alongside the parsed one (req.rawBody) —
+// PayFast's ITN validation needs to forward the EXACT bytes it received back to
+// PayFast's own /validate endpoint; the parsed/re-stringified object isn't
+// guaranteed to byte-match. See modules/payments/payfast.controller.ts.
+app.use(express.urlencoded({
+  extended: true,
+  verify: (req, _res, buf) => { (req as Request).rawBody = buf.toString("utf8"); },
+}));
 app.use(cookieParser());
 
 // ── 4. CROSS-CUTTING MIDDLEWARE ───────────────────────────────────────────────
@@ -101,6 +109,7 @@ app.use(`${API}/content`,       publicContentRouter);
 app.use(`${API}/admin/merch`,   adminMerchRouter);
 app.use(`${API}/merch`,         publicMerchRouter);
 app.use(`${API}/merch-orders`,  merchOrdersRouter);
+app.use(`${API}/payments/payfast`, payfastRoutes);
 
 // ── 6. 404 ────────────────────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {

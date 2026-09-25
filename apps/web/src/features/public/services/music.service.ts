@@ -54,7 +54,10 @@ export const publicMusicService = {
     return data;
   },
 
-  async purchase(id: string) {
+  // Doesn't grant the album — starts a real PayFast payment and hands back the
+  // fields to redirect the browser there. The album unlocks once PayFast
+  // confirms payment via ITN (server-side), not from this call returning.
+  async purchase(id: string): Promise<{ data: { actionUrl: string; fields: Record<string, string> } }> {
     const { data } = await apiClient.post(endpoints.music.purchase(id));
     return data;
   },

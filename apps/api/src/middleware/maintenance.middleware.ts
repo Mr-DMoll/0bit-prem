@@ -43,6 +43,11 @@ export async function maintenanceMode(
   const active = await isMaintenanceActive();
   if (!active) { next(); return; }
   if (isSuperAdmin(req)) { next(); return; }
+  // PayFast's ITN carries real payment confirmation — dropping it because
+  // someone flipped on a "back soon" banner would leave a customer's money
+  // taken but their purchase never unlocked. Always let it through; the
+  // handler's own signature + server-confirmation checks are its real gate.
+  if (req.path === "/api/v1/payments/payfast/notify") { next(); return; }
 
   res.status(503).json({
     status:  "fail",

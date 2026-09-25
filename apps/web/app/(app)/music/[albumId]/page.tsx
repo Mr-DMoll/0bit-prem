@@ -1,10 +1,12 @@
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Play, Pause, Lock } from "lucide-react";
 import PageHeader from "@/features/public/PageHeader";
 import { useMusicPlayer } from "@/features/public/MusicPlayerContext";
 import { useAuth } from "@/shared/context/AuthContext";
+import { useToast } from "@/shared/context/ToastContext";
 import LockedTrackPrompt from "@/features/public/LockedTrackPrompt";
 import { publicMusicService, type PublicAlbum, type PublicTrack } from "@/features/public/services/music.service";
 import { optimizedBackground } from "@/shared/utils/image";
@@ -14,10 +16,32 @@ function formatDuration(seconds: number) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-export default function AlbumDetailPage({ params }: { params: Promise<{ albumId: string }> }) {
+// Submits a real, auto-submitting form POST to PayFast — matches their
+// documented redirect method. A plain `window.location.href` GET isn't the
+// spec'd approach and the fields (incl. the signature) are built server-side
+// specifically to be posted as form fields, in order.
+function redirectToPayFast(actionUrl: string, fields: Record<string, string>) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = actionUrl;
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+function AlbumDetailPageInner({ params }: { params: Promise<{ albumId: string }> }) {
   const { albumId } = use(params);
   const { user } = useAuth();
   const { nowPlaying, isPlaying, play, toggle } = useMusicPlayer();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const toast = useToast();
 
   const [album, setAlbum]     = useState<PublicAlbum | null>(null);
   const [tracks, setTracks]   = useState<PublicTrack[]>([]);
@@ -41,6 +65,45 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
 
   useEffect(() => { fetchAlbum(); }, [fetchAlbum]);
 
+  // Handles the browser landing back here after PayFast. This is NOT proof of
+  // payment on its own — a customer could reach ?payment=success just by
+  // navigating there — it's only a cue to start polling for what PayFast's own
+  // ITN (server-to-server, the real confirmation) has actually recorded.
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (!payment) return;
+
+    const rest = new URLSearchParams(searchParams);
+    rest.delete("payment");
+    router.replace(rest.size ? `?${rest.toString()}` : `/music/${albumId}`, { scroll: false });
+
+    if (payment === "cancelled") {
+      toast("Payment cancelled — nothing was charged.");
+      return;
+    }
+    if (payment !== "success") return;
+
+    toast("Payment received — confirming…");
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      const res = await publicMusicService.getAlbum(albumId);
+      if (res.data?.isOwned) {
+        clearInterval(interval);
+        setIsOwned(true);
+        setTracks(res.data.tracks ?? []);
+        toast("Album unlocked!");
+      } else if (attempts >= 8) {
+        // ~24s of polling (8 * 3s) — PayFast's ITN is usually near-instant, but
+        // isn't guaranteed to land before the browser redirect does.
+        clearInterval(interval);
+        toast("Still confirming your payment — refresh in a moment if the album doesn't unlock.");
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const handlePlay = (track: PublicTrack) => {
     if (track.isLocked || !track.audioUrl) {
       setLockedTrack({ ...track, albumId, albumTitle: album?.title });
@@ -61,11 +124,13 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
     }
     setIsBuying(true); setError(null);
     try {
-      await publicMusicService.purchase(albumId);
-      await fetchAlbum();
+      const res = await publicMusicService.purchase(albumId);
+      redirectToPayFast(res.data.actionUrl, res.data.fields);
+      // No finally/setIsBuying(false) on the success path — the browser is
+      // about to navigate away to PayFast; leaving the button disabled avoids
+      // a double-submit in the moment before that navigation happens.
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Purchase failed.");
-    } finally {
       setIsBuying(false);
     }
   };
@@ -141,5 +206,13 @@ export default function AlbumDetailPage({ params }: { params: Promise<{ albumId:
 
       {lockedTrack && <LockedTrackPrompt track={lockedTrack} onClose={() => setLockedTrack(null)} onBuy={handleBuy} />}
     </div>
+  );
+}
+
+export default function AlbumDetailPage(props: { params: Promise<{ albumId: string }> }) {
+  return (
+    <Suspense fallback={null}>
+      <AlbumDetailPageInner {...props} />
+    </Suspense>
   );
 }

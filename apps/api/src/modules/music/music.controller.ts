@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
+import { randomBytes } from "crypto";
 import { prisma } from "@repo/database";
 import { HttpStatus, Role } from "@repo/types";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { AppError } from "../../utils/appError.js";
 import { slugify } from "../../utils/slugify.js";
+import { buildPaymentRedirect } from "../../services/payfast.service.js";
+import env from "../../config/env.config.js";
 
 const STAFF_ROLES = [Role.ADMIN, Role.SUPER_ADMIN, Role.MANAGER];
 
@@ -285,6 +288,11 @@ export const getAlbum = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// Starts a real PayFast payment — does NOT grant the album. That only happens
+// once PayFast's ITN confirms the money actually arrived (see
+// modules/payments/payfast.controller.ts). This endpoint just records a PENDING
+// PaymentTransaction and hands back the fields the frontend needs to redirect
+// the browser to PayFast.
 export const purchaseAlbum = catchAsync(async (req: Request, res: Response) => {
   const { id: albumId } = req.params;
   const userId = req.user!.userId;
@@ -297,30 +305,35 @@ export const purchaseAlbum = catchAsync(async (req: Request, res: Response) => {
   });
   if (existing) throw new AppError("You already own this album", HttpStatus.CONFLICT);
 
-  const [purchase] = await prisma.$transaction(async (tx) => {
-    const purchase = await tx.albumPurchase.create({
-      data: {
-        userId,
-        albumId,
-        priceCents: album.priceCents,
-        currency: album.currency,
-      },
-    });
-    await tx.paymentTransaction.create({
-      data: {
-        userId,
-        purpose: "ALBUM_PURCHASE",
-        referenceId: purchase.id,
-        mPaymentId: `album_${purchase.id}`,
-        amountCents: album.priceCents,
-        currency: album.currency,
-        status: "COMPLETE",
-      },
-    });
-    return [purchase];
+  // Unique per attempt (not per album) — retrying a cancelled/failed purchase
+  // gets its own transaction row and its own m_payment_id, rather than fighting
+  // over one shared record per album.
+  const mPaymentId = `alb_${randomBytes(10).toString("hex")}`;
+
+  await prisma.paymentTransaction.create({
+    data: {
+      userId,
+      purpose: "ALBUM_PURCHASE",
+      referenceId: albumId, // AlbumPurchase doesn't exist yet — created on ITN confirmation
+      mPaymentId,
+      amountCents: album.priceCents,
+      currency: album.currency,
+      status: "PENDING",
+    },
   });
 
-  return res.status(HttpStatus.CREATED).json({ status: "success", data: { purchase } });
+  const { actionUrl, fields } = buildPaymentRedirect({
+    mPaymentId,
+    amountCents: album.priceCents,
+    itemName: album.title,
+    itemDescription: `Premvkay album — ${album.title}`,
+    buyerEmail: req.user!.email,
+    returnUrl: `${env.FRONTEND_URL}/music/${albumId}?payment=success`,
+    cancelUrl: `${env.FRONTEND_URL}/music/${albumId}?payment=cancelled`,
+    notifyUrl: `${env.PAYFAST_TUNNEL_URL ?? env.API_URL}/api/v1/payments/payfast/notify`,
+  });
+
+  return res.status(HttpStatus.OK).json({ status: "success", data: { actionUrl, fields } });
 });
 
 // ── PUBLIC: my albums ───────────────────────────────────────────────────────────
